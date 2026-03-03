@@ -1,0 +1,38 @@
+{
+  "manifest_version": 3,
+  "name": "Debunked",
+  "version": "1.0.0",
+  "description": "Fake News Bingo — spot misinformation patterns and fill your Bingo card!",
+  "permissions": ["storage", "activeTab"],
+  "host_permissions": ["<all_urls>"],
+  "action": {
+    "default_popup": "src/popup/popup.html",
+    "default_icon": {
+      "16": "src/assets/icon16.png",
+      "48": "src/assets/icon48.png",
+      "128": "src/assets/icon128.png"
+    }
+  },
+  "background": {
+    "service_worker": "src/background/service-worker.js"
+  },
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": [
+        "src/lib/patterns.js",
+        "src/lib/bingo.js",
+        "src/content/scanner.js",
+        "src/content/highlighter.js",
+        "src/content/widget.js"
+      ],
+      "css": ["src/content/content.css"],
+      "run_at": "document_idle"
+    }
+  ],
+  "icons": {
+    "16": "src/assets/icon16.png",
+    "48": "src/assets/icon48.png",
+    "128": "src/assets/icon128.png"
+  }
+}
