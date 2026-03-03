@@ -1,4 +1,4 @@
-const BACKEND_URL = 'https://debunked-backend.up.railway.app'; // Update after deploy
+const BACKEND_URL = 'https://debunked-production.up.railway.app';
 const UPDATE_INTERVAL = 24 * 60 * 60 * 1000; // 24 hours
 
 chrome.runtime.onInstalled.addListener(async () => {
