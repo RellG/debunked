@@ -16,7 +16,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     await chrome.storage.local.remove('bingoCard');
     const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
     if (tab) {
-      chrome.tabs.sendMessage(tab.id, { action: 'newCard' });
+      chrome.tabs.sendMessage(tab.id, { action: 'newCard' }).catch(() => {});
     }
     window.close();
   });
