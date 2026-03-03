@@ -8,7 +8,9 @@ window.Debunked.Scanner = {
     for (const pattern of localPatterns) {
       let regex;
       if (pattern.type === 'regex') {
-        regex = new RegExp(pattern.pattern, pattern.flags || 'gi');
+        // Ensure 'g' flag is always present for exec() loop
+        const flags = pattern.flags ? (pattern.flags.includes('g') ? pattern.flags : pattern.flags + 'g') : 'gi';
+        regex = new RegExp(pattern.pattern, flags);
       } else if (pattern.type === 'keyword') {
         regex = new RegExp(`\\b${escapeRegex(pattern.pattern)}\\b`, 'gi');
       } else if (pattern.type === 'phrase') {

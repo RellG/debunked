@@ -115,5 +115,9 @@ window.Debunked.Bingo = {
       return true;
     }
     return false;
+  },
+
+  clearCard() {
+    this.card = null;
   }
 };

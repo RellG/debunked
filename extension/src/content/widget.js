@@ -8,31 +8,40 @@ window.Debunked.Widget = {
   dragOffset: { x: 0, y: 0 },
 
   async init() {
-    await window.Debunked.PatternManager.load();
+    try {
+      await window.Debunked.PatternManager.load();
 
-    const loaded = await window.Debunked.Bingo.loadState();
-    if (!loaded) {
-      const categories = this.getUniqueCategories();
-      window.Debunked.Bingo.generateCard(categories);
-      await window.Debunked.Bingo.saveState();
+      const loaded = await window.Debunked.Bingo.loadState();
+      if (!loaded) {
+        const categories = this.getUniqueCategories();
+        window.Debunked.Bingo.generateCard(categories);
+        await window.Debunked.Bingo.saveState();
+      }
+
+      this.createWidget();
+      this.scanPage();
+    } catch (err) {
+      console.error('[Debunked] Failed to initialize:', err);
     }
-
-    this.createWidget();
-    this.scanPage();
   },
 
   getUniqueCategories() {
-    const seen = new Set();
+    // Build a list of all patterns with their bingo labels, ensuring variety
     const result = [];
-    for (const p of window.Debunked.PatternManager.patterns) {
-      if (!seen.has(p.category)) {
-        seen.add(p.category);
-        result.push({ category: p.category, bingoLabel: p.bingoLabel });
-      }
-      if (result.length < 24) {
-        result.push({ category: p.category, bingoLabel: p.bingoLabel });
-      }
+    const patterns = window.Debunked.PatternManager.patterns;
+
+    // First pass: add each unique pattern's bingoLabel
+    for (const p of patterns) {
+      result.push({ category: p.category, bingoLabel: p.bingoLabel });
     }
+
+    // If we don't have enough (need 24), duplicate from the start
+    let i = 0;
+    while (result.length < 24) {
+      result.push({ ...result[i % result.length] });
+      i++;
+    }
+
     return result;
   },
 
