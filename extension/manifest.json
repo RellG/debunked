@@ -3,8 +3,8 @@
   "name": "Debunked",
   "version": "1.0.0",
   "description": "Fake News Bingo — spot misinformation patterns and fill your Bingo card!",
-  "permissions": ["storage", "activeTab", "alarms"],
-  "host_permissions": ["<all_urls>"],
+  "permissions": ["storage", "activeTab", "alarms", "clipboardWrite"],
+  "host_permissions": ["https://debunked-production.up.railway.app/*"],
   "action": {
     "default_popup": "src/popup/popup.html",
     "default_icon": {

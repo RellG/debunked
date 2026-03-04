@@ -10,6 +10,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     document.getElementById('bingo-grid').innerHTML = '<p style="grid-column:1/-1;text-align:center;color:#666;padding:20px;">Visit a page to start detecting patterns!</p>';
   }
 
+  document.getElementById('share-btn').disabled = !card;
   document.getElementById('share-btn').addEventListener('click', () => shareCard(card));
 
   document.getElementById('new-card-btn').addEventListener('click', async () => {
@@ -57,7 +58,7 @@ function renderGrid(card) {
 
 function renderScore(card) {
   const filled = card.grid.flat().filter(c => c.filled).length;
-  document.getElementById('score-text').textContent = `${filled}/25`;
+  document.getElementById('score-text').textContent = `${filled - 1}/24`;
   const status = document.getElementById('bingo-status');
   if (filled === 25) {
     status.textContent = 'BLACKOUT!';
@@ -78,7 +79,11 @@ function renderMatches(card) {
     if (seen.has(key)) continue;
     seen.add(key);
     const li = document.createElement('li');
-    li.innerHTML = `<span class="category-tag">${m.category.replace(/_/g, ' ')}</span> "${m.matched}"`;
+    const tag = document.createElement('span');
+    tag.className = 'category-tag';
+    tag.textContent = m.category.replace(/_/g, ' ');
+    li.appendChild(tag);
+    li.appendChild(document.createTextNode(` "${m.matched}"`));
     ul.appendChild(li);
   }
   if (allMatches.length === 0) {

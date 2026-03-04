@@ -21,6 +21,7 @@ window.Debunked.Bingo = {
           grid[row][col] = {
             label: selected[idx].bingoLabel,
             category: selected[idx].category,
+            description: selected[idx].description || '',
             filled: false,
             matches: []
           };

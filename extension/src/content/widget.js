@@ -14,6 +14,10 @@ window.Debunked.Widget = {
       const loaded = await window.Debunked.Bingo.loadState();
       if (!loaded) {
         const categories = this.getUniqueCategories();
+        if (categories.length === 0) {
+          console.warn('[Debunked] No patterns loaded, skipping card generation');
+          return;
+        }
         window.Debunked.Bingo.generateCard(categories);
         await window.Debunked.Bingo.saveState();
       }
@@ -26,16 +30,20 @@ window.Debunked.Widget = {
   },
 
   getUniqueCategories() {
-    // Build a list of all patterns with their bingo labels, ensuring variety
-    const result = [];
     const patterns = window.Debunked.PatternManager.patterns;
+    if (!patterns || patterns.length === 0) return [];
 
-    // First pass: add each unique pattern's bingoLabel
+    // Use each pattern's unique bingoLabel as a card entry
+    const result = [];
+    const seenLabels = new Set();
     for (const p of patterns) {
-      result.push({ category: p.category, bingoLabel: p.bingoLabel });
+      if (!seenLabels.has(p.bingoLabel)) {
+        seenLabels.add(p.bingoLabel);
+        result.push({ category: p.category, bingoLabel: p.bingoLabel, description: p.description });
+      }
     }
 
-    // If we don't have enough (need 24), duplicate from the start
+    // Pad with duplicates if needed (need 24 for the card)
     let i = 0;
     while (result.length < 24) {
       result.push({ ...result[i % result.length] });
@@ -46,12 +54,15 @@ window.Debunked.Widget = {
   },
 
   createWidget() {
+    if (!document.body) return;
+
     this.widgetEl = document.createElement('div');
     this.widgetEl.id = 'debunked-widget';
+    const filledCount = Math.max(0, window.Debunked.Bingo.getFilledCount() - 1);
     this.widgetEl.innerHTML = `
       <div id="debunked-widget-pill">
         <div id="debunked-mini-grid">${this.renderMiniGrid()}</div>
-        <span id="debunked-widget-count">${window.Debunked.Bingo.getFilledCount()}/24</span>
+        <span id="debunked-widget-count">${filledCount}/24</span>
         <span style="font-size:11px;opacity:0.7">DEBUNKED</span>
       </div>
     `;
@@ -108,13 +119,14 @@ window.Debunked.Widget = {
       }
     }
 
+    const filledCount = Math.max(0, window.Debunked.Bingo.getFilledCount() - 1);
     const bingosText = card.bingos.length > 0
       ? `BINGO x${card.bingos.length}!`
       : 'No bingos yet';
 
     return `
       <h3>Debunked Bingo</h3>
-      <p class="score">${window.Debunked.Bingo.getFilledCount()}/24 squares | ${bingosText}</p>
+      <p class="score">${filledCount}/24 squares | ${bingosText}</p>
       <div class="bingo-grid">${gridHtml}</div>
     `;
   },
@@ -128,15 +140,6 @@ window.Debunked.Widget = {
     const text = window.Debunked.Scanner.getPageText();
     const matches = window.Debunked.Scanner.scan(text);
 
-    const seenCategories = new Set();
-    const uniqueMatches = [];
-    for (const m of matches) {
-      if (!seenCategories.has(m.category)) {
-        seenCategories.add(m.category);
-        uniqueMatches.push(m);
-      }
-    }
-
     let newFills = 0;
     for (const match of matches) {
       const result = window.Debunked.Bingo.addMatch(match);
@@ -147,7 +150,9 @@ window.Debunked.Widget = {
 
     window.Debunked.Highlighter.highlightMatches(matches);
     this.updateWidget();
-    window.Debunked.Bingo.saveState();
+    window.Debunked.Bingo.saveState().catch(err =>
+      console.error('[Debunked] Failed to save state:', err)
+    );
 
     if (matches.length > 0) {
       const pill = this.widgetEl.querySelector('#debunked-widget-pill');
@@ -165,12 +170,14 @@ window.Debunked.Widget = {
   updateWidget() {
     const countEl = this.widgetEl.querySelector('#debunked-widget-count');
     const gridEl = this.widgetEl.querySelector('#debunked-mini-grid');
-    countEl.textContent = `${window.Debunked.Bingo.getFilledCount()}/24`;
+    const filledCount = Math.max(0, window.Debunked.Bingo.getFilledCount() - 1);
+    countEl.textContent = `${filledCount}/24`;
     gridEl.innerHTML = this.renderMiniGrid();
     this.expandedEl.innerHTML = this.renderExpandedCard();
   },
 
   showNotification(message) {
+    if (!document.body) return;
     const notif = document.createElement('div');
     notif.style.cssText = `
       position: fixed; top: 20px; right: 20px; z-index: 2147483647;
@@ -199,9 +206,11 @@ window.Debunked.Widget = {
 
     document.addEventListener('mousemove', (e) => {
       if (!this.isDragging) return;
+      const maxX = window.innerWidth - pill.offsetWidth;
+      const maxY = window.innerHeight - pill.offsetHeight;
       pill.style.position = 'fixed';
-      pill.style.left = (e.clientX - this.dragOffset.x) + 'px';
-      pill.style.top = (e.clientY - this.dragOffset.y) + 'px';
+      pill.style.left = Math.max(0, Math.min(e.clientX - this.dragOffset.x, maxX)) + 'px';
+      pill.style.top = Math.max(0, Math.min(e.clientY - this.dragOffset.y, maxY)) + 'px';
       pill.style.right = 'auto';
       pill.style.bottom = 'auto';
     });
@@ -222,7 +231,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
       window.Debunked.Widget.scanPage();
       sendResponse({ success: true });
     });
-    return true; // Keep the message channel open for async response
+    return true;
   }
 });
 
