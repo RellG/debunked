@@ -510,3 +510,68 @@ mark.debunked-claim:hover {
 .debunked-meter-segment:nth-child(3) { animation-delay: 0.2s; }
 .debunked-meter-segment:nth-child(4) { animation-delay: 0.25s; }
 .debunked-meter-segment:nth-child(5) { animation-delay: 0.3s; }
+
+/* --- Loading Indicator (top bar) --- */
+#debunked-loader {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 2147483647;
+  background: var(--dbk-bg-primary);
+  border-bottom: 1px solid var(--dbk-border);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 20px;
+  font-family: var(--dbk-font);
+  transform: translateY(-100%);
+  opacity: 0;
+  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.3);
+}
+
+#debunked-loader.visible {
+  transform: translateY(0);
+  opacity: 1;
+}
+
+#debunked-loader.hiding {
+  transform: translateY(-100%);
+  opacity: 0;
+}
+
+.debunked-loader-icon {
+  color: var(--dbk-accent);
+  display: flex;
+  align-items: center;
+  animation: dbk-loader-pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes dbk-loader-pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.6; transform: scale(0.92); }
+}
+
+.debunked-loader-text {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--dbk-text-secondary);
+  letter-spacing: 0.2px;
+}
+
+.debunked-loader-progress {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  height: 2px;
+  background: linear-gradient(90deg, var(--dbk-accent), #a78bfa, var(--dbk-accent));
+  background-size: 200% 100%;
+  animation: dbk-progress-shimmer 2s linear infinite;
+  width: 100%;
+}
+
+@keyframes dbk-progress-shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
