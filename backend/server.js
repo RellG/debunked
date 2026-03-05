@@ -7,6 +7,9 @@ const domainsRouter = require('./routes/domains');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
+// Railway runs behind a reverse proxy
+app.set('trust proxy', 1);
+
 app.use(cors());
 app.use(express.json({ limit: '100kb' }));
 
