@@ -1,9 +1,9 @@
 {
   "manifest_version": 3,
   "name": "Debunked",
-  "version": "1.0.0",
-  "description": "Fake News Bingo — spot misinformation patterns and fill your Bingo card!",
-  "permissions": ["storage", "activeTab", "alarms", "clipboardWrite"],
+  "version": "2.0.0",
+  "description": "AI-powered fact-checking for political news, social media, and videos.",
+  "permissions": ["storage", "activeTab", "alarms"],
   "host_permissions": ["https://debunked-production.up.railway.app/*"],
   "action": {
     "default_popup": "src/popup/popup.html",
@@ -20,11 +20,14 @@
     {
       "matches": ["<all_urls>"],
       "js": [
-        "src/lib/patterns.js",
-        "src/lib/bingo.js",
-        "src/content/scanner.js",
+        "src/content/extractors/article.js",
+        "src/content/extractors/twitter.js",
+        "src/content/extractors/reddit.js",
+        "src/content/extractors/youtube.js",
+        "src/content/extractors/generic.js",
+        "src/content/detector.js",
         "src/content/highlighter.js",
-        "src/content/widget.js"
+        "src/content/sidebar.js"
       ],
       "css": ["src/content/content.css"],
       "run_at": "document_idle"
@@ -32,7 +35,7 @@
   ],
   "web_accessible_resources": [
     {
-      "resources": ["data/patterns.json"],
+      "resources": ["data/domains.json"],
       "matches": ["<all_urls>"]
     }
   ],
