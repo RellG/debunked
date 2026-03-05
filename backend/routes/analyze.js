@@ -1,18 +1,24 @@
 const express = require('express');
+const { getSystemPrompt } = require('../prompts/debunk');
+
 const router = express.Router();
 
 const OPENROUTER_API_KEY = process.env.OPENROUTER_API_KEY;
 const OPENROUTER_URL = 'https://openrouter.ai/api/v1/chat/completions';
 
 router.post('/', async (req, res) => {
-  const { text } = req.body;
-  if (!text || typeof text !== 'string') {
-    return res.status(400).json({ error: 'text field is required' });
+  const { content, type, url } = req.body;
+
+  if (!content || typeof content !== 'string') {
+    return res.status(400).json({ error: 'content field is required' });
   }
 
   if (!OPENROUTER_API_KEY) {
     return res.status(503).json({ error: 'AI analysis not configured' });
   }
+
+  const contentType = type || 'generic';
+  const truncated = content.slice(0, 6000);
 
   try {
     const response = await fetch(OPENROUTER_URL, {
@@ -26,17 +32,11 @@ router.post('/', async (req, res) => {
       body: JSON.stringify({
         model: 'meta-llama/llama-3.1-8b-instruct:free',
         messages: [
-          {
-            role: 'system',
-            content: `You are a media literacy analyst. Analyze the following text for logical fallacies and misinformation patterns. Return a JSON array of detected issues. Each item should have: "category" (one of: cherry_picking, straw_man, slippery_slope, whataboutism, false_equivalence, appeal_to_emotion, bandwagon, red_herring), "matched" (the relevant quote from the text), "description" (brief explanation of why this is a fallacy), "severity" (1-5). Return ONLY the JSON array, no other text.`
-          },
-          {
-            role: 'user',
-            content: text.slice(0, 3000)
-          }
+          { role: 'system', content: getSystemPrompt(contentType) },
+          { role: 'user', content: `Analyze this ${contentType} content from ${url || 'unknown source'}:\n\n${truncated}` }
         ],
-        max_tokens: 1000,
-        temperature: 0.3
+        max_tokens: 2000,
+        temperature: 0.2
       })
     });
 
@@ -45,20 +45,37 @@ router.post('/', async (req, res) => {
     }
 
     const data = await response.json();
-    const content = data.choices?.[0]?.message?.content || '[]';
+    const raw = data.choices?.[0]?.message?.content || '{}';
 
-    let fallacies;
+    let analysis;
     try {
-      fallacies = JSON.parse(content);
+      analysis = JSON.parse(raw);
     } catch {
-      const jsonMatch = content.match(/\[[\s\S]*\]/);
-      fallacies = jsonMatch ? JSON.parse(jsonMatch[0]) : [];
+      const jsonMatch = raw.match(/\{[\s\S]*\}/);
+      analysis = jsonMatch ? JSON.parse(jsonMatch[0]) : {
+        overallVerdict: 'yellow',
+        summary: 'Analysis could not be fully parsed.',
+        claims: [],
+        fallacies: []
+      };
     }
 
-    res.json({ fallacies });
+    // Validate structure
+    analysis.overallVerdict = analysis.overallVerdict || 'yellow';
+    analysis.summary = analysis.summary || 'No summary available.';
+    analysis.claims = Array.isArray(analysis.claims) ? analysis.claims : [];
+    analysis.fallacies = Array.isArray(analysis.fallacies) ? analysis.fallacies : [];
+
+    res.json(analysis);
   } catch (err) {
-    console.error('[Debunked] AI analysis error:', err.message);
-    res.status(500).json({ error: 'Analysis failed', fallacies: [] });
+    console.error('[Debunked] Analysis error:', err.message);
+    res.status(500).json({
+      error: 'Analysis failed',
+      overallVerdict: 'yellow',
+      summary: 'Analysis temporarily unavailable.',
+      claims: [],
+      fallacies: []
+    });
   }
 });
 

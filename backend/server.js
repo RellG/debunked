@@ -1,27 +1,27 @@
 const express = require('express');
 const cors = require('cors');
 const rateLimit = require('express-rate-limit');
-const patternsRouter = require('./routes/patterns');
 const analyzeRouter = require('./routes/analyze');
+const domainsRouter = require('./routes/domains');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
 app.use(cors());
-app.use(express.json({ limit: '50kb' }));
+app.use(express.json({ limit: '100kb' }));
 app.use(rateLimit({
   windowMs: 15 * 60 * 1000,
-  max: 100,
+  max: 20,
   message: { error: 'Too many requests, please try again later' }
 }));
 
 app.get('/api/health', (req, res) => {
-  res.json({ status: 'ok', timestamp: new Date().toISOString() });
+  res.json({ status: 'ok', version: '2.0.0', timestamp: new Date().toISOString() });
 });
 
-app.use('/api/patterns', patternsRouter);
 app.use('/api/analyze', analyzeRouter);
+app.use('/api/domains', domainsRouter);
 
 app.listen(PORT, () => {
-  console.log(`[Debunked] Backend running on port ${PORT}`);
+  console.log(`[Debunked v2] Backend running on port ${PORT}`);
 });
