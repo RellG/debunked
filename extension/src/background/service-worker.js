@@ -1,61 +1,81 @@
 const BACKEND_URL = 'https://debunked-production.up.railway.app';
 
+// Update domain list periodically
 chrome.runtime.onInstalled.addListener(async () => {
-  await updatePatternDB();
-  chrome.alarms.create('updatePatterns', { periodInMinutes: 24 * 60 });
+  await updateDomains();
+  chrome.alarms.create('updateDomains', { periodInMinutes: 24 * 60 });
 });
 
 chrome.alarms.onAlarm.addListener(async (alarm) => {
-  if (alarm.name === 'updatePatterns') {
-    await updatePatternDB();
+  if (alarm.name === 'updateDomains') {
+    await updateDomains();
   }
 });
 
+// Message handling
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
-  if (message.action === 'analyzeText') {
-    analyzeWithAI(message.text).then(sendResponse);
+  if (message.action === 'analyzeContent') {
+    analyzeContent(message.payload).then(sendResponse);
     return true;
   }
-  if (message.action === 'getPatterns') {
-    chrome.storage.local.get('patternDB').then(sendResponse);
-    return true;
+
+  if (message.action === 'analysisStarted') {
+    // Set icon to "analyzing" state
+    if (sender.tab?.id) {
+      chrome.action.setBadgeText({ text: '...', tabId: sender.tab.id });
+      chrome.action.setBadgeBackgroundColor({ color: '#666', tabId: sender.tab.id });
+    }
   }
+
+  if (message.action === 'analysisComplete') {
+    if (sender.tab?.id) {
+      const text = message.issueCount > 0 ? String(message.issueCount) : '';
+      const colors = { green: '#4caf50', yellow: '#ff9800', red: '#f44336' };
+      chrome.action.setBadgeText({ text, tabId: sender.tab.id });
+      chrome.action.setBadgeBackgroundColor({
+        color: colors[message.verdict] || '#666',
+        tabId: sender.tab.id
+      });
+    }
+  }
+
+  if (message.action === 'analysisEmpty' || message.action === 'analysisFailed') {
+    if (sender.tab?.id) {
+      chrome.action.setBadgeText({ text: '', tabId: sender.tab.id });
+    }
+  }
+
+  return false;
 });
 
-async function updatePatternDB() {
-  try {
-    const stored = await chrome.storage.local.get('patternDB');
-    const headers = {};
-    if (stored.patternDB?.etag) {
-      headers['If-None-Match'] = stored.patternDB.etag;
-    }
-
-    const resp = await fetch(`${BACKEND_URL}/api/patterns`, { headers });
-    if (resp.status === 304) return;
-    if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
-
-    const data = await resp.json();
-    const etag = resp.headers.get('ETag');
-    await chrome.storage.local.set({
-      patternDB: { ...data, etag, lastUpdated: Date.now() }
-    });
-    console.log('[Debunked] Pattern DB updated:', data.patterns.length, 'patterns');
-  } catch (err) {
-    console.warn('[Debunked] Failed to update pattern DB, using cached version:', err.message);
-  }
-}
-
-async function analyzeWithAI(text) {
+async function analyzeContent(payload) {
   try {
     const resp = await fetch(`${BACKEND_URL}/api/analyze`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ text: text.slice(0, 3000) })
+      body: JSON.stringify(payload)
     });
     if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
     return await resp.json();
   } catch (err) {
-    console.warn('[Debunked] AI analysis failed:', err.message);
-    return { fallacies: [] };
+    console.error('[Debunked] Backend analysis failed:', err.message);
+    return {
+      overallVerdict: 'yellow',
+      summary: 'Analysis temporarily unavailable. Please try again.',
+      claims: [],
+      fallacies: []
+    };
+  }
+}
+
+async function updateDomains() {
+  try {
+    const resp = await fetch(`${BACKEND_URL}/api/domains`);
+    if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+    const data = await resp.json();
+    await chrome.storage.local.set({ domainList: data });
+    console.log('[Debunked] Domain list updated:', data.domains?.length, 'domains');
+  } catch (err) {
+    console.warn('[Debunked] Failed to update domains:', err.message);
   }
 }
