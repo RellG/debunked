@@ -16,18 +16,34 @@ window.Debunked.Sidebar = {
     this.sidebarEl = document.createElement('div');
     this.sidebarEl.id = 'debunked-sidebar';
 
-    const verdictColor = { green: '#4caf50', yellow: '#ff9800', red: '#f44336' };
-    const verdictText = { green: 'Mostly Reliable', yellow: 'Mixed Accuracy', red: 'Significant Issues' };
-    const color = verdictColor[analysis.overallVerdict] || verdictColor.yellow;
+    const verdictText = {
+      green: 'Content Verified',
+      yellow: 'Mixed Accuracy',
+      red: 'Issues Detected'
+    };
+
+    const verdictDesc = {
+      green: 'Most claims in this content appear accurate.',
+      yellow: 'Some claims need additional context or verification.',
+      red: 'Significant factual concerns were identified.'
+    };
+
+    const verdict = analysis.overallVerdict || 'yellow';
+
+    // Build confidence meter — 5 segments colored by claim distribution
+    const claimStats = this.getClaimStats(analysis.claims);
+    const meterHtml = this.buildMeter(claimStats);
 
     let claimsHtml = '';
-    for (const claim of analysis.claims) {
+    for (let i = 0; i < analysis.claims.length; i++) {
+      const claim = analysis.claims[i];
+      const verdictIcon = this.verdictIcon(claim.verdict);
       claimsHtml += `
         <div class="debunked-claim-card" id="debunked-claim-${claim.id}">
           <div class="debunked-claim-verdict debunked-verdict-${claim.verdict}">
-            ${this.verdictBadge(claim.verdict)}
+            ${verdictIcon} ${this.verdictBadge(claim.verdict)}
           </div>
-          <blockquote class="debunked-claim-quote">"${this.escapeHtml(claim.originalQuote || claim.text)}"</blockquote>
+          <blockquote class="debunked-claim-quote">${this.escapeHtml(claim.originalQuote || claim.text)}</blockquote>
           <p class="debunked-claim-explanation">${this.escapeHtml(claim.explanation)}</p>
         </div>
       `;
@@ -37,7 +53,7 @@ window.Debunked.Sidebar = {
     if (analysis.fallacies && analysis.fallacies.length > 0) {
       fallaciesHtml = `
         <div class="debunked-section">
-          <h3 class="debunked-section-title">Logical Fallacies</h3>
+          <h3 class="debunked-section-title">Fallacies Detected</h3>
           ${analysis.fallacies.map(f => `
             <div class="debunked-fallacy-card">
               <strong>${this.escapeHtml(f.type.replace(/_/g, ' '))}</strong>
@@ -52,23 +68,28 @@ window.Debunked.Sidebar = {
       <div class="debunked-sidebar-header">
         <div class="debunked-sidebar-title">
           <span class="debunked-logo">DEBUNKED</span>
-          <button class="debunked-close-btn" id="debunked-close">&times;</button>
+          <button class="debunked-close-btn" id="debunked-close">
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+              <path d="M1 1L13 13M13 1L1 13" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+            </svg>
+          </button>
         </div>
-        <div class="debunked-verdict-bar" style="background:${color}">
-          <span class="debunked-verdict-icon">${analysis.overallVerdict === 'green' ? '&#10003;' : analysis.overallVerdict === 'red' ? '&#10007;' : '&#9888;'}</span>
-          <span>${verdictText[analysis.overallVerdict] || 'Analysis Complete'}</span>
+        <div class="debunked-verdict-bar verdict-${verdict}">
+          <span class="debunked-verdict-icon"><span class="debunked-verdict-dot"></span></span>
+          <span>${verdictText[verdict] || 'Analysis Complete'}</span>
         </div>
         <p class="debunked-summary">${this.escapeHtml(analysis.summary)}</p>
+        ${meterHtml}
       </div>
       <div class="debunked-sidebar-body">
         <div class="debunked-section">
-          <h3 class="debunked-section-title">Claims (${analysis.claims.length})</h3>
-          ${claimsHtml || '<p class="debunked-empty">No factual claims detected.</p>'}
+          <h3 class="debunked-section-title">Claims Analyzed (${analysis.claims.length})</h3>
+          ${claimsHtml || '<p class="debunked-empty">No verifiable factual claims detected in this content.</p>'}
         </div>
         ${fallaciesHtml}
       </div>
       <div class="debunked-sidebar-footer">
-        Powered by Debunked
+        Powered by Debunked AI
       </div>
     `;
 
@@ -78,15 +99,47 @@ window.Debunked.Sidebar = {
       this.toggle();
     });
 
-    this.isOpen = true;
-    this.sidebarEl.classList.add('open');
+    // Stagger open for smooth feel
+    requestAnimationFrame(() => {
+      this.isOpen = true;
+      this.sidebarEl.classList.add('open');
+    });
+  },
+
+  getClaimStats(claims) {
+    let green = 0, yellow = 0, red = 0;
+    for (const c of claims) {
+      if (c.verdict === 'true' || c.verdict === 'mostly_true') green++;
+      else if (c.verdict === 'misleading' || c.verdict === 'unverified') yellow++;
+      else if (c.verdict === 'false') red++;
+    }
+    return { green, yellow, red, total: claims.length };
+  },
+
+  buildMeter(stats) {
+    if (stats.total === 0) return '';
+    const segments = [];
+    const total = Math.max(stats.total, 5);
+    const greenSegs = Math.round((stats.green / total) * 5);
+    const redSegs = Math.round((stats.red / total) * 5);
+    const yellowSegs = 5 - greenSegs - redSegs;
+
+    for (let i = 0; i < 5; i++) {
+      let cls = 'debunked-meter-segment';
+      if (i < greenSegs) cls += ' filled seg-green';
+      else if (i < greenSegs + yellowSegs) cls += ' filled seg-yellow';
+      else cls += ' filled seg-red';
+      segments.push(`<div class="${cls}"></div>`);
+    }
+    return `<div class="debunked-confidence-meter">${segments.join('')}</div>`;
   },
 
   createTab(verdict) {
     this.tabEl = document.createElement('div');
     this.tabEl.id = 'debunked-tab';
     this.tabEl.className = `debunked-tab-${verdict}`;
-    this.tabEl.textContent = 'D';
+    // Use an SVG shield icon instead of just "D"
+    this.tabEl.innerHTML = `<svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2L3 7v5c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V7l-9-5zm-1 15l-4-4 1.41-1.41L11 14.17l6.59-6.59L19 9l-8 8z"/></svg>`;
     this.tabEl.title = 'Toggle Debunked sidebar';
     this.tabEl.addEventListener('click', () => this.toggle());
     document.body.appendChild(this.tabEl);
@@ -105,19 +158,30 @@ window.Debunked.Sidebar = {
     if (el) {
       el.scrollIntoView({ behavior: 'smooth', block: 'center' });
       el.classList.add('debunked-flash');
-      setTimeout(() => el.classList.remove('debunked-flash'), 1000);
+      setTimeout(() => el.classList.remove('debunked-flash'), 1500);
     }
   },
 
   verdictBadge(verdict) {
     const labels = {
-      true: 'TRUE',
-      mostly_true: 'MOSTLY TRUE',
-      misleading: 'MISLEADING',
-      false: 'FALSE',
-      unverified: 'UNVERIFIED'
+      true: 'Verified',
+      mostly_true: 'Mostly True',
+      misleading: 'Misleading',
+      false: 'False',
+      unverified: 'Unverified'
     };
     return labels[verdict] || verdict.toUpperCase();
+  },
+
+  verdictIcon(verdict) {
+    const icons = {
+      true: '<svg width="12" height="12" viewBox="0 0 12 12" fill="currentColor"><path d="M4.5 8.5L2 6l-.7.7L4.5 9.9l7-7-.7-.7z"/></svg>',
+      mostly_true: '<svg width="12" height="12" viewBox="0 0 12 12" fill="currentColor"><path d="M4.5 8.5L2 6l-.7.7L4.5 9.9l7-7-.7-.7z"/></svg>',
+      misleading: '<svg width="12" height="12" viewBox="0 0 12 12" fill="currentColor"><path d="M6 1L0.5 11h11L6 1zm0 3.5c.28 0 .5.22.5.5v2c0 .28-.22.5-.5.5s-.5-.22-.5-.5V5c0-.28.22-.5.5-.5zM5.5 9h1v1h-1V9z"/></svg>',
+      false: '<svg width="12" height="12" viewBox="0 0 12 12" fill="currentColor"><path d="M9.5 3.2L8.8 2.5 6 5.3 3.2 2.5l-.7.7L5.3 6 2.5 8.8l.7.7L6 6.7l2.8 2.8.7-.7L6.7 6z"/></svg>',
+      unverified: '<svg width="12" height="12" viewBox="0 0 12 12" fill="currentColor"><circle cx="6" cy="8.5" r=".75"/><path d="M6 1.5A2.5 2.5 0 003.5 4h1.25A1.25 1.25 0 016 2.75c.69 0 1.25.56 1.25 1.25 0 .69-.56 1.25-1.25 1.25-.35 0-.625.28-.625.625V7h1.25v-.56A2.5 2.5 0 006 1.5z"/></svg>'
+    };
+    return icons[verdict] || '';
   },
 
   escapeHtml(str) {

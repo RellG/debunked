@@ -1,242 +1,405 @@
 /* ============================================
-   DEBUNKED v2 — Content Script Styles
+   DEBUNKED v2 — Modern AI Fact-Checker UI
+   Aesthetic: Perplexity meets Grok — clean,
+   confident, editorial intelligence briefing.
    ============================================ */
 
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Source+Serif+4:ital,wght@0,400;1,400&display=swap');
+
+/* --- CSS Variables --- */
+:root {
+  --dbk-bg-primary: #0d0f14;
+  --dbk-bg-secondary: #141620;
+  --dbk-bg-card: #1a1d2b;
+  --dbk-bg-card-hover: #1f2335;
+  --dbk-border: rgba(255, 255, 255, 0.06);
+  --dbk-border-subtle: rgba(255, 255, 255, 0.03);
+  --dbk-text-primary: #e8eaed;
+  --dbk-text-secondary: #9aa0b0;
+  --dbk-text-muted: #5c6275;
+  --dbk-accent: #6c8cff;
+  --dbk-accent-glow: rgba(108, 140, 255, 0.15);
+  --dbk-green: #34d399;
+  --dbk-green-bg: rgba(52, 211, 153, 0.08);
+  --dbk-green-border: rgba(52, 211, 153, 0.25);
+  --dbk-yellow: #fbbf24;
+  --dbk-yellow-bg: rgba(251, 191, 36, 0.08);
+  --dbk-yellow-border: rgba(251, 191, 36, 0.25);
+  --dbk-red: #f87171;
+  --dbk-red-bg: rgba(248, 113, 113, 0.08);
+  --dbk-red-border: rgba(248, 113, 113, 0.25);
+  --dbk-gray: #6b7280;
+  --dbk-gray-bg: rgba(107, 114, 128, 0.08);
+  --dbk-font: 'Outfit', -apple-system, BlinkMacSystemFont, sans-serif;
+  --dbk-font-serif: 'Source Serif 4', Georgia, serif;
+  --dbk-radius: 12px;
+  --dbk-radius-sm: 8px;
+  --dbk-shadow: 0 8px 32px rgba(0, 0, 0, 0.4), 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
 /* --- Inline Claim Highlights --- */
-.debunked-claim {
-  border-radius: 2px;
+mark.debunked-claim {
+  all: unset;
+  border-radius: 3px;
   cursor: pointer;
-  transition: background-color 0.2s;
-  padding: 1px 0;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  padding: 2px 1px;
+  position: relative;
+  display: inline;
 }
 
-.debunked-verdict-true {
-  background-color: rgba(76, 175, 80, 0.15);
-  border-bottom: 2px solid #4caf50;
+mark.debunked-verdict-true {
+  background: linear-gradient(to bottom, rgba(52, 211, 153, 0.06), rgba(52, 211, 153, 0.12));
+  border-bottom: 2px solid var(--dbk-green);
+  text-decoration-color: var(--dbk-green);
 }
 
-.debunked-verdict-mostly_true {
-  background-color: rgba(139, 195, 74, 0.15);
-  border-bottom: 2px solid #8bc34a;
+mark.debunked-verdict-mostly_true {
+  background: linear-gradient(to bottom, rgba(52, 211, 153, 0.04), rgba(52, 211, 153, 0.08));
+  border-bottom: 2px solid rgba(52, 211, 153, 0.6);
 }
 
-.debunked-verdict-misleading {
-  background-color: rgba(255, 152, 0, 0.2);
-  border-bottom: 2px solid #ff9800;
+mark.debunked-verdict-misleading {
+  background: linear-gradient(to bottom, rgba(251, 191, 36, 0.06), rgba(251, 191, 36, 0.14));
+  border-bottom: 2px solid var(--dbk-yellow);
 }
 
-.debunked-verdict-false {
-  background-color: rgba(244, 67, 54, 0.2);
-  border-bottom: 2px solid #f44336;
+mark.debunked-verdict-false {
+  background: linear-gradient(to bottom, rgba(248, 113, 113, 0.06), rgba(248, 113, 113, 0.14));
+  border-bottom: 2px solid var(--dbk-red);
 }
 
-.debunked-verdict-unverified {
-  background-color: rgba(158, 158, 158, 0.15);
-  border-bottom: 2px dashed #9e9e9e;
+mark.debunked-verdict-unverified {
+  background: linear-gradient(to bottom, rgba(107, 114, 128, 0.04), rgba(107, 114, 128, 0.1));
+  border-bottom: 2px dashed var(--dbk-gray);
 }
 
-.debunked-claim:hover {
-  filter: brightness(0.95);
+mark.debunked-claim:hover {
+  filter: brightness(1.15);
+  box-shadow: 0 1px 6px rgba(108, 140, 255, 0.15);
 }
 
 /* --- Sidebar Panel --- */
 #debunked-sidebar {
   position: fixed;
   top: 0;
-  right: -380px;
-  width: 380px;
+  right: -420px;
+  width: 420px;
   height: 100vh;
-  background: #1a1a2e;
-  color: #e0e0e0;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  background: var(--dbk-bg-primary);
+  color: var(--dbk-text-primary);
+  font-family: var(--dbk-font);
   font-size: 14px;
   z-index: 2147483647;
-  box-shadow: -4px 0 20px rgba(0, 0, 0, 0.4);
+  box-shadow: var(--dbk-shadow);
   display: flex;
   flex-direction: column;
-  transition: right 0.3s ease;
+  transition: right 0.4s cubic-bezier(0.16, 1, 0.3, 1);
   overflow: hidden;
+  border-left: 1px solid var(--dbk-border);
 }
 
 #debunked-sidebar.open {
   right: 0;
 }
 
+/* --- Sidebar Header --- */
 .debunked-sidebar-header {
-  padding: 16px;
-  border-bottom: 1px solid #2a2a4a;
+  padding: 20px 24px 16px;
   flex-shrink: 0;
+  background: linear-gradient(180deg, rgba(108, 140, 255, 0.04) 0%, transparent 100%);
+  border-bottom: 1px solid var(--dbk-border);
 }
 
 .debunked-sidebar-title {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 12px;
+  margin-bottom: 16px;
 }
 
 .debunked-logo {
-  font-size: 18px;
-  font-weight: 800;
-  color: #ffc107;
-  letter-spacing: 2px;
+  font-family: var(--dbk-font);
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--dbk-text-primary);
+  letter-spacing: 4px;
+  text-transform: uppercase;
+  opacity: 0.9;
 }
 
 .debunked-close-btn {
-  background: none;
-  border: none;
-  color: #888;
-  font-size: 24px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid var(--dbk-border);
+  color: var(--dbk-text-muted);
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
   cursor: pointer;
-  padding: 0 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
   line-height: 1;
+  transition: all 0.2s;
 }
 
 .debunked-close-btn:hover {
-  color: #fff;
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--dbk-text-primary);
+  border-color: rgba(255, 255, 255, 0.1);
 }
 
+/* --- Verdict Bar --- */
 .debunked-verdict-bar {
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 10px 14px;
-  border-radius: 8px;
+  gap: 10px;
+  padding: 12px 16px;
+  border-radius: var(--dbk-radius);
   font-weight: 600;
-  font-size: 14px;
-  color: white;
-  margin-bottom: 10px;
+  font-size: 13px;
+  letter-spacing: 0.3px;
+  margin-bottom: 14px;
+  border: 1px solid transparent;
+}
+
+.debunked-verdict-bar.verdict-green {
+  background: var(--dbk-green-bg);
+  border-color: var(--dbk-green-border);
+  color: var(--dbk-green);
+}
+
+.debunked-verdict-bar.verdict-yellow {
+  background: var(--dbk-yellow-bg);
+  border-color: var(--dbk-yellow-border);
+  color: var(--dbk-yellow);
+}
+
+.debunked-verdict-bar.verdict-red {
+  background: var(--dbk-red-bg);
+  border-color: var(--dbk-red-border);
+  color: var(--dbk-red);
 }
 
 .debunked-verdict-icon {
-  font-size: 18px;
+  font-size: 16px;
+  display: flex;
+  align-items: center;
 }
 
+.debunked-verdict-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  display: inline-block;
+  animation: dbk-pulse 2s ease-in-out infinite;
+}
+
+.verdict-green .debunked-verdict-dot { background: var(--dbk-green); box-shadow: 0 0 8px var(--dbk-green); }
+.verdict-yellow .debunked-verdict-dot { background: var(--dbk-yellow); box-shadow: 0 0 8px var(--dbk-yellow); }
+.verdict-red .debunked-verdict-dot { background: var(--dbk-red); box-shadow: 0 0 8px var(--dbk-red); }
+
+@keyframes dbk-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+/* --- Summary --- */
 .debunked-summary {
-  font-size: 13px;
-  color: #aaa;
-  line-height: 1.4;
+  font-family: var(--dbk-font-serif);
+  font-size: 14px;
+  color: var(--dbk-text-secondary);
+  line-height: 1.6;
   margin: 0;
+  font-style: italic;
 }
 
+/* --- Sidebar Body --- */
 .debunked-sidebar-body {
   flex: 1;
   overflow-y: auto;
-  padding: 16px;
+  padding: 20px 24px;
 }
 
 .debunked-section {
-  margin-bottom: 20px;
+  margin-bottom: 24px;
 }
 
 .debunked-section-title {
-  font-size: 13px;
-  color: #888;
+  font-family: var(--dbk-font);
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--dbk-text-muted);
   text-transform: uppercase;
-  letter-spacing: 1px;
-  margin: 0 0 12px;
+  letter-spacing: 1.5px;
+  margin: 0 0 14px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.debunked-section-title::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--dbk-border);
 }
 
 /* --- Claim Cards --- */
 .debunked-claim-card {
-  background: #2a2a4a;
-  border-radius: 8px;
-  padding: 12px;
-  margin-bottom: 10px;
-  transition: background-color 0.3s;
+  background: var(--dbk-bg-card);
+  border: 1px solid var(--dbk-border);
+  border-radius: var(--dbk-radius);
+  padding: 16px;
+  margin-bottom: 12px;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  animation: dbk-slide-up 0.4s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.debunked-claim-card:nth-child(1) { animation-delay: 0.05s; }
+.debunked-claim-card:nth-child(2) { animation-delay: 0.1s; }
+.debunked-claim-card:nth-child(3) { animation-delay: 0.15s; }
+.debunked-claim-card:nth-child(4) { animation-delay: 0.2s; }
+.debunked-claim-card:nth-child(5) { animation-delay: 0.25s; }
+.debunked-claim-card:nth-child(6) { animation-delay: 0.3s; }
+.debunked-claim-card:nth-child(7) { animation-delay: 0.35s; }
+.debunked-claim-card:nth-child(8) { animation-delay: 0.4s; }
+.debunked-claim-card:nth-child(9) { animation-delay: 0.45s; }
+.debunked-claim-card:nth-child(10) { animation-delay: 0.5s; }
+
+@keyframes dbk-slide-up {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.debunked-claim-card:hover {
+  background: var(--dbk-bg-card-hover);
+  border-color: rgba(255, 255, 255, 0.08);
 }
 
 .debunked-claim-card.debunked-flash {
-  background: #3a3a5a;
+  background: var(--dbk-bg-card-hover);
+  border-color: var(--dbk-accent);
+  box-shadow: 0 0 0 1px var(--dbk-accent-glow), inset 0 0 20px var(--dbk-accent-glow);
 }
 
+/* --- Verdict Badges --- */
 .debunked-claim-verdict {
-  font-size: 11px;
+  font-family: var(--dbk-font);
+  font-size: 10px;
   font-weight: 700;
-  letter-spacing: 0.5px;
-  padding: 3px 8px;
-  border-radius: 4px;
-  display: inline-block;
-  margin-bottom: 8px;
+  letter-spacing: 1px;
+  padding: 4px 10px;
+  border-radius: 6px;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  margin-bottom: 10px;
+  text-transform: uppercase;
+  border: 1px solid transparent;
 }
 
 .debunked-claim-verdict.debunked-verdict-true {
-  background: rgba(76, 175, 80, 0.2);
-  color: #4caf50;
+  background: var(--dbk-green-bg);
+  color: var(--dbk-green);
+  border-color: var(--dbk-green-border);
 }
 
 .debunked-claim-verdict.debunked-verdict-mostly_true {
-  background: rgba(139, 195, 74, 0.2);
-  color: #8bc34a;
+  background: var(--dbk-green-bg);
+  color: rgba(52, 211, 153, 0.75);
+  border-color: rgba(52, 211, 153, 0.15);
 }
 
 .debunked-claim-verdict.debunked-verdict-misleading {
-  background: rgba(255, 152, 0, 0.2);
-  color: #ff9800;
+  background: var(--dbk-yellow-bg);
+  color: var(--dbk-yellow);
+  border-color: var(--dbk-yellow-border);
 }
 
 .debunked-claim-verdict.debunked-verdict-false {
-  background: rgba(244, 67, 54, 0.2);
-  color: #f44336;
+  background: var(--dbk-red-bg);
+  color: var(--dbk-red);
+  border-color: var(--dbk-red-border);
 }
 
 .debunked-claim-verdict.debunked-verdict-unverified {
-  background: rgba(158, 158, 158, 0.2);
-  color: #9e9e9e;
+  background: var(--dbk-gray-bg);
+  color: var(--dbk-gray);
+  border-color: rgba(107, 114, 128, 0.2);
 }
 
+/* --- Claim Content --- */
 .debunked-claim-quote {
+  font-family: var(--dbk-font-serif);
   font-style: italic;
-  color: #ccc;
-  margin: 0 0 8px;
-  padding-left: 10px;
-  border-left: 2px solid #444;
+  color: var(--dbk-text-primary);
+  margin: 0 0 10px;
+  padding: 10px 14px;
+  background: rgba(255, 255, 255, 0.02);
+  border-left: 3px solid var(--dbk-border);
+  border-radius: 0 var(--dbk-radius-sm) var(--dbk-radius-sm) 0;
   font-size: 13px;
-  line-height: 1.4;
+  line-height: 1.55;
 }
 
 .debunked-claim-explanation {
   margin: 0;
   font-size: 13px;
-  color: #aaa;
-  line-height: 1.4;
+  color: var(--dbk-text-secondary);
+  line-height: 1.55;
 }
 
 .debunked-empty {
-  color: #666;
+  color: var(--dbk-text-muted);
   font-style: italic;
   font-size: 13px;
+  text-align: center;
+  padding: 24px 0;
 }
 
 /* --- Fallacy Cards --- */
 .debunked-fallacy-card {
-  background: #2a2a4a;
-  border-radius: 8px;
-  padding: 12px;
+  background: var(--dbk-bg-card);
+  border: 1px solid rgba(251, 191, 36, 0.1);
+  border-radius: var(--dbk-radius);
+  padding: 14px 16px;
   margin-bottom: 10px;
+  animation: dbk-slide-up 0.4s cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 
 .debunked-fallacy-card strong {
-  color: #ff9800;
+  color: var(--dbk-yellow);
   text-transform: capitalize;
-  font-size: 13px;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.3px;
 }
 
 .debunked-fallacy-card p {
   margin: 6px 0 0;
-  color: #aaa;
+  color: var(--dbk-text-secondary);
   font-size: 13px;
-  line-height: 1.4;
+  line-height: 1.55;
 }
 
 /* --- Sidebar Footer --- */
 .debunked-sidebar-footer {
-  padding: 12px 16px;
-  border-top: 1px solid #2a2a4a;
+  padding: 14px 24px;
+  border-top: 1px solid var(--dbk-border);
   font-size: 11px;
-  color: #555;
+  color: var(--dbk-text-muted);
   text-align: center;
   flex-shrink: 0;
+  letter-spacing: 0.5px;
+  background: var(--dbk-bg-secondary);
 }
 
 /* --- Edge Tab --- */
@@ -245,32 +408,105 @@
   top: 50%;
   right: 0;
   transform: translateY(-50%);
-  width: 28px;
-  height: 60px;
+  width: 36px;
+  height: 36px;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-family: -apple-system, sans-serif;
-  font-weight: 800;
-  font-size: 14px;
+  font-family: var(--dbk-font);
+  font-weight: 700;
+  font-size: 13px;
   color: white;
-  border-radius: 6px 0 0 6px;
+  border-radius: 10px 0 0 10px;
   cursor: pointer;
   z-index: 2147483646;
-  writing-mode: vertical-lr;
-  box-shadow: -2px 0 8px rgba(0, 0, 0, 0.3);
-  transition: opacity 0.2s;
+  box-shadow: -2px 0 12px rgba(0, 0, 0, 0.3);
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  backdrop-filter: blur(8px);
 }
 
 #debunked-tab:hover {
-  opacity: 0.9;
+  width: 44px;
+  box-shadow: -4px 0 20px rgba(0, 0, 0, 0.4);
 }
 
-.debunked-tab-green { background: #4caf50; }
-.debunked-tab-yellow { background: #ff9800; }
-.debunked-tab-red { background: #f44336; }
+.debunked-tab-green {
+  background: linear-gradient(135deg, rgba(52, 211, 153, 0.9), rgba(52, 211, 153, 0.7));
+}
+.debunked-tab-yellow {
+  background: linear-gradient(135deg, rgba(251, 191, 36, 0.9), rgba(251, 191, 36, 0.7));
+}
+.debunked-tab-red {
+  background: linear-gradient(135deg, rgba(248, 113, 113, 0.9), rgba(248, 113, 113, 0.7));
+}
 
 /* --- Scrollbar --- */
-.debunked-sidebar-body::-webkit-scrollbar { width: 4px; }
+.debunked-sidebar-body::-webkit-scrollbar { width: 3px; }
 .debunked-sidebar-body::-webkit-scrollbar-track { background: transparent; }
-.debunked-sidebar-body::-webkit-scrollbar-thumb { background: #444; border-radius: 2px; }
+.debunked-sidebar-body::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 3px;
+}
+.debunked-sidebar-body::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.15);
+}
+
+/* --- Loading Animation --- */
+.debunked-loading {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 20px 0;
+  justify-content: center;
+}
+
+.debunked-loading-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--dbk-accent);
+  animation: dbk-bounce 1.4s ease-in-out infinite;
+}
+
+.debunked-loading-dot:nth-child(2) { animation-delay: 0.16s; }
+.debunked-loading-dot:nth-child(3) { animation-delay: 0.32s; }
+
+@keyframes dbk-bounce {
+  0%, 80%, 100% { transform: scale(0.6); opacity: 0.4; }
+  40% { transform: scale(1); opacity: 1; }
+}
+
+/* --- Confidence Meter --- */
+.debunked-confidence-meter {
+  display: flex;
+  gap: 3px;
+  margin-top: 12px;
+}
+
+.debunked-meter-segment {
+  flex: 1;
+  height: 4px;
+  border-radius: 2px;
+  background: rgba(255, 255, 255, 0.06);
+  overflow: hidden;
+  transition: all 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.debunked-meter-segment.filled {
+  animation: dbk-meter-fill 0.8s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.debunked-meter-segment.filled.seg-green { background: var(--dbk-green); }
+.debunked-meter-segment.filled.seg-yellow { background: var(--dbk-yellow); }
+.debunked-meter-segment.filled.seg-red { background: var(--dbk-red); }
+
+@keyframes dbk-meter-fill {
+  from { transform: scaleX(0); transform-origin: left; }
+  to { transform: scaleX(1); transform-origin: left; }
+}
+
+.debunked-meter-segment:nth-child(1) { animation-delay: 0.1s; }
+.debunked-meter-segment:nth-child(2) { animation-delay: 0.15s; }
+.debunked-meter-segment:nth-child(3) { animation-delay: 0.2s; }
+.debunked-meter-segment:nth-child(4) { animation-delay: 0.25s; }
+.debunked-meter-segment:nth-child(5) { animation-delay: 0.3s; }

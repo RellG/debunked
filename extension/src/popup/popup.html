@@ -8,18 +8,40 @@
 <body>
   <div class="popup-container">
     <header>
-      <h1>DEBUNKED</h1>
+      <div class="brand">
+        <svg class="brand-icon" width="20" height="20" viewBox="0 0 24 24" fill="none">
+          <path d="M12 2L3 7v5c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V7l-9-5z" fill="url(#shieldGrad)" opacity="0.15"/>
+          <path d="M12 2L3 7v5c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V7l-9-5z" stroke="url(#shieldGrad)" stroke-width="1.5" fill="none"/>
+          <path d="M8.5 12.5L11 15l5-6" stroke="url(#shieldGrad)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+          <defs>
+            <linearGradient id="shieldGrad" x1="3" y1="2" x2="21" y2="19">
+              <stop offset="0%" stop-color="#6c8cff"/>
+              <stop offset="100%" stop-color="#a78bfa"/>
+            </linearGradient>
+          </defs>
+        </svg>
+        <h1>DEBUNKED</h1>
+      </div>
       <p class="subtitle">AI Fact-Checker</p>
     </header>
 
-    <div id="status"></div>
+    <div id="status-card">
+      <div id="status-icon"></div>
+      <div id="status-text">Checking page status...</div>
+    </div>
 
     <div class="actions">
-      <button id="analyze-btn" class="btn btn-primary">Analyze This Page</button>
+      <button id="analyze-btn" class="btn btn-primary">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="11" cy="11" r="8"/>
+          <path d="M21 21l-4.35-4.35"/>
+        </svg>
+        <span>Analyze This Page</span>
+      </button>
     </div>
 
     <footer>
-      <button id="settings-btn" class="btn-link">Settings</button>
+      <span class="version">v2.0</span>
     </footer>
   </div>
   <script src="popup.js"></script>

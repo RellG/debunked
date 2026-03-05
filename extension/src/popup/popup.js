@@ -1,8 +1,9 @@
 document.addEventListener('DOMContentLoaded', async () => {
-  const statusEl = document.getElementById('status');
+  const statusCard = document.getElementById('status-card');
+  const statusText = document.getElementById('status-text');
   const analyzeBtn = document.getElementById('analyze-btn');
+  const analyzeBtnText = analyzeBtn.querySelector('span');
 
-  // Check if current tab has analysis results
   const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
 
   if (tab) {
@@ -10,40 +11,47 @@ document.addEventListener('DOMContentLoaded', async () => {
       const response = await chrome.tabs.sendMessage(tab.id, { action: 'getAnalysis' });
 
       if (response?.isAnalyzing) {
-        statusEl.textContent = 'Analyzing page...';
-        statusEl.className = 'status-analyzing';
+        setStatus('analyzing', 'Analyzing page content...');
         analyzeBtn.disabled = true;
-        analyzeBtn.textContent = 'Analyzing...';
+        analyzeBtn.classList.add('loading');
+        analyzeBtnText.textContent = 'Analyzing...';
       } else if (response?.analysis) {
         const a = response.analysis;
-        const issueCount = a.claims.filter(c =>
+        const total = a.claims.length;
+        const issues = a.claims.filter(c =>
           ['misleading', 'false', 'unverified'].includes(c.verdict)
         ).length;
-        statusEl.textContent = `${a.claims.length} claims analyzed, ${issueCount} issue${issueCount !== 1 ? 's' : ''} found.`;
-        statusEl.className = 'status-done';
-        analyzeBtn.textContent = 'Re-analyze';
+
+        if (issues === 0) {
+          setStatus('done', `${total} claim${total !== 1 ? 's' : ''} checked — all clear.`);
+        } else {
+          setStatus('done', `${total} claim${total !== 1 ? 's' : ''} analyzed, ${issues} issue${issues !== 1 ? 's' : ''} found.`);
+        }
+        analyzeBtnText.textContent = 'Re-analyze';
       } else {
-        statusEl.textContent = 'No analysis yet for this page.';
-        statusEl.className = 'status-empty';
+        setStatus('empty', 'No analysis yet for this page.');
       }
     } catch {
-      statusEl.textContent = 'Navigate to a page to analyze.';
-      statusEl.className = 'status-empty';
+      setStatus('empty', 'Open a page to start fact-checking.');
     }
   }
 
   analyzeBtn.addEventListener('click', async () => {
     analyzeBtn.disabled = true;
-    analyzeBtn.textContent = 'Analyzing...';
-    statusEl.textContent = 'Sending to AI for analysis...';
-    statusEl.className = 'status-analyzing';
+    analyzeBtn.classList.add('loading');
+    analyzeBtnText.textContent = 'Analyzing...';
+    setStatus('analyzing', 'Sending content to AI...');
 
     const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
     if (tab) {
       chrome.tabs.sendMessage(tab.id, { action: 'analyze' }).catch(() => {});
     }
 
-    // Close popup — results will appear in sidebar
-    setTimeout(() => window.close(), 500);
+    setTimeout(() => window.close(), 600);
   });
+
+  function setStatus(state, text) {
+    statusCard.className = state;
+    statusText.textContent = text;
+  }
 });
