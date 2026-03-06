@@ -97,7 +97,14 @@ window.Debunked.Sidebar = {
         ${fallaciesHtml}
       </div>
       <div class="debunked-sidebar-footer">
-        Powered by Debunked AI
+        <button class="debunked-share-btn" id="debunked-share">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/>
+            <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/>
+          </svg>
+          Share Fact-Check
+        </button>
+        <span class="debunked-footer-text">Powered by Debunked AI</span>
       </div>
     `;
 
@@ -105,6 +112,31 @@ window.Debunked.Sidebar = {
 
     this.sidebarEl.querySelector('#debunked-close').addEventListener('click', () => {
       this.toggle();
+    });
+
+    // Share button
+    this.sidebarEl.querySelector('#debunked-share').addEventListener('click', async () => {
+      const btn = this.sidebarEl.querySelector('#debunked-share');
+      btn.disabled = true;
+      btn.textContent = 'Creating link...';
+      try {
+        const response = await chrome.runtime.sendMessage({
+          action: 'shareAnalysis',
+          payload: { url: window.location.href, analysis }
+        });
+        if (response?.shareUrl) {
+          await navigator.clipboard.writeText(response.shareUrl);
+          btn.textContent = 'Link copied!';
+          setTimeout(() => {
+            btn.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg> Share Fact-Check`;
+            btn.disabled = false;
+          }, 2500);
+        }
+      } catch (err) {
+        btn.textContent = 'Share failed';
+        btn.disabled = false;
+        console.error('[Debunked] Share failed:', err);
+      }
     });
 
     // Stagger open for smooth feel

@@ -19,6 +19,11 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     return true;
   }
 
+  if (message.action === 'shareAnalysis') {
+    shareAnalysis(message.payload).then(sendResponse);
+    return true;
+  }
+
   if (message.action === 'analysisStarted') {
     // Set icon to "analyzing" state
     if (sender.tab?.id) {
@@ -65,6 +70,21 @@ async function analyzeContent(payload) {
       claims: [],
       fallacies: []
     };
+  }
+}
+
+async function shareAnalysis(payload) {
+  try {
+    const resp = await fetch(`${BACKEND_URL}/api/share`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+    if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+    return await resp.json();
+  } catch (err) {
+    console.error('[Debunked] Share failed:', err.message);
+    return { error: err.message };
   }
 }
 
