@@ -48,7 +48,8 @@ Rules:
 - "sources" should reference well-known, authoritative sources (government data, academic studies, major news organizations, official records). Keep each source entry to 1 sentence.
 - If no factual claims are found, return an empty claims array with overallVerdict "green".
 - Limit to the 10 most significant claims if there are many.
-- For the overallVerdict: "green" = mostly accurate, "yellow" = mixed or needs context, "red" = significant factual issues.`;
+- For the overallVerdict: "green" = mostly accurate, "yellow" = mixed or needs context, "red" = significant factual issues.
+- If "CURRENT EVENT CONTEXT" is provided below the content, use it to verify claims about recent events. This context comes from a live web search and contains up-to-date information.`;
 }
 
 module.exports = { getSystemPrompt };

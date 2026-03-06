@@ -7,6 +7,7 @@ const router = express.Router();
 
 const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
 const OPENAI_MODEL = process.env.OPENAI_MODEL || 'gpt-4.1-mini';
+const SEARCH_MODEL = process.env.OPENAI_SEARCH_MODEL || 'gpt-4o-mini-search-preview';
 const OPENAI_URL = 'https://api.openai.com/v1/chat/completions';
 
 function hashUrl(url) {
@@ -74,7 +75,40 @@ router.post('/', async (req, res) => {
   const truncated = content.slice(0, 6000);
 
   try {
-    console.log(`[${requestId}] Calling OpenAI | model=${OPENAI_MODEL} | input=${truncated.length} chars`);
+    // Step 1: Web search for current event context
+    let searchContext = '';
+    try {
+      console.log(`[${requestId}] Searching for context | model=${SEARCH_MODEL}`);
+      const searchResponse = await fetch(OPENAI_URL, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${OPENAI_API_KEY}`
+        },
+        body: JSON.stringify({
+          model: SEARCH_MODEL,
+          web_search_options: {},
+          messages: [
+            { role: 'system', content: 'You are a research assistant. Search the web and provide a brief factual summary of the key claims and events mentioned in the following content. Focus on verifying specific facts, statistics, dates, and events. Be concise — 300 words max.' },
+            { role: 'user', content: truncated.slice(0, 3000) }
+          ]
+        })
+      });
+      if (searchResponse.ok) {
+        const searchData = await searchResponse.json();
+        searchContext = searchData.choices?.[0]?.message?.content || '';
+        console.log(`[${requestId}] Search context received | ${searchContext.length} chars`);
+      }
+    } catch (searchErr) {
+      console.warn(`[${requestId}] Search step failed (continuing without): ${searchErr.message}`);
+    }
+
+    // Step 2: Analysis with GPT-4.1 mini + search context
+    const userContent = searchContext
+      ? `Analyze this ${contentType} content from ${url || 'unknown source'}:\n\n${truncated}\n\n--- CURRENT EVENT CONTEXT (from web search) ---\n${searchContext}`
+      : `Analyze this ${contentType} content from ${url || 'unknown source'}:\n\n${truncated}`;
+
+    console.log(`[${requestId}] Calling OpenAI | model=${OPENAI_MODEL} | input=${truncated.length} chars | search_context=${searchContext.length} chars`);
 
     const response = await fetch(OPENAI_URL, {
       method: 'POST',
@@ -86,7 +120,7 @@ router.post('/', async (req, res) => {
         model: OPENAI_MODEL,
         messages: [
           { role: 'system', content: getSystemPrompt(contentType) },
-          { role: 'user', content: `Analyze this ${contentType} content from ${url || 'unknown source'}:\n\n${truncated}` }
+          { role: 'user', content: userContent }
         ],
         response_format: { type: 'json_object' },
         max_tokens: 2000,

@@ -140,7 +140,7 @@ window.Debunked.Detector = {
         return;
       }
 
-      this.updateLoader('Sending to Debunked AI for analysis...');
+      this.updateLoader('Searching the web & analyzing...');
 
       const response = await chrome.runtime.sendMessage({
         action: 'analyzeContent',
