@@ -205,3 +205,22 @@ footer {
   letter-spacing: 1px;
   font-weight: 500;
 }
+
+/* --- Settings Button --- */
+.settings-btn {
+  position: absolute;
+  top: 0;
+  right: 0;
+  background: none;
+  border: none;
+  color: #3a3d4e;
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 6px;
+  transition: all 0.2s;
+}
+
+.settings-btn:hover {
+  color: #9aa0b0;
+  background: rgba(255, 255, 255, 0.04);
+}

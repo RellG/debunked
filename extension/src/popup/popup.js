@@ -4,6 +4,10 @@ document.addEventListener('DOMContentLoaded', async () => {
   const analyzeBtn = document.getElementById('analyze-btn');
   const analyzeBtnText = analyzeBtn.querySelector('span');
 
+  document.getElementById('settings-btn').addEventListener('click', () => {
+    window.location.href = '../settings/settings.html';
+  });
+
   const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
 
   if (tab) {

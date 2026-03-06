@@ -5,11 +5,13 @@ window.Debunked.Detector = {
   analysisResult: null,
   isAnalyzing: false,
   loaderEl: null,
+  settings: { autoAnalyze: true, showLoader: true, customDomains: [] },
 
   async init() {
     try {
       await this.loadDomains();
-      const shouldAuto = this.shouldAutoTrigger();
+      await this.loadSettings();
+      const shouldAuto = this.settings.autoAnalyze && this.shouldAutoTrigger();
 
       if (shouldAuto) {
         await this.analyze();
@@ -48,9 +50,21 @@ window.Debunked.Detector = {
     }
   },
 
+  async loadSettings() {
+    try {
+      const stored = await chrome.storage.sync.get('settings');
+      if (stored.settings) {
+        this.settings = { ...this.settings, ...stored.settings };
+      }
+    } catch {
+      // Use defaults
+    }
+  },
+
   shouldAutoTrigger() {
     const hostname = window.location.hostname.replace(/^www\./, '');
-    return this.domains.some(d => hostname === d || hostname.endsWith('.' + d));
+    const allDomains = [...this.domains, ...(this.settings.customDomains || [])];
+    return allDomains.some(d => hostname === d || hostname.endsWith('.' + d));
   },
 
   detectPageType() {
@@ -72,6 +86,7 @@ window.Debunked.Detector = {
   // --- Loading Indicator ---
   showLoader() {
     if (this.loaderEl) return;
+    if (!this.settings.showLoader) return;
     this.loaderEl = document.createElement('div');
     this.loaderEl.id = 'debunked-loader';
     this.loaderEl.innerHTML = `
@@ -81,7 +96,10 @@ window.Debunked.Detector = {
           <path d="M8.5 12.5L11 15l5-6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
         </svg>
       </div>
-      <span class="debunked-loader-text">Debunked is analyzing this page...</span>
+      <div class="debunked-loader-content">
+        <span class="debunked-loader-label">Debunked</span>
+        <span class="debunked-loader-text">Analyzing this page...</span>
+      </div>
       <div class="debunked-loader-progress"></div>
     `;
     document.body.appendChild(this.loaderEl);
@@ -122,7 +140,7 @@ window.Debunked.Detector = {
         return;
       }
 
-      this.updateLoader('Sending to AI for fact-checking...');
+      this.updateLoader('Sending to Debunked AI for analysis...');
 
       const response = await chrome.runtime.sendMessage({
         action: 'analyzeContent',

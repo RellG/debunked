@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Debunked Settings</title>
+  <link rel="stylesheet" href="settings.css">
+</head>
+<body>
+  <div class="settings-container">
+    <header>
+      <button class="back-btn" id="back-btn">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M19 12H5M12 19l-7-7 7-7"/>
+        </svg>
+      </button>
+      <h1>Settings</h1>
+    </header>
+
+    <div class="settings-group">
+      <h2>General</h2>
+
+      <label class="setting-row">
+        <div class="setting-info">
+          <span class="setting-label">Auto-analyze</span>
+          <span class="setting-desc">Automatically analyze pages on known news sites</span>
+        </div>
+        <input type="checkbox" id="auto-analyze" class="toggle">
+      </label>
+
+      <label class="setting-row">
+        <div class="setting-info">
+          <span class="setting-label">Loading indicator</span>
+          <span class="setting-desc">Show floating toast while analyzing</span>
+        </div>
+        <input type="checkbox" id="show-loader" class="toggle">
+      </label>
+    </div>
+
+    <div class="settings-group">
+      <h2>Custom Domains</h2>
+      <p class="group-desc">Add domains to auto-analyze (e.g. newssite.com)</p>
+      <div class="domain-input-row">
+        <input type="text" id="domain-input" placeholder="example.com">
+        <button id="add-domain" class="btn-add">Add</button>
+      </div>
+      <ul id="domain-list" class="domain-list"></ul>
+    </div>
+
+    <div class="settings-footer">
+      <span>Debunked v3.0</span>
+    </div>
+  </div>
+  <script src="settings.js"></script>
+</body>
+</html>
