@@ -653,6 +653,19 @@ mark.debunked-claim:hover {
   font-weight: 700;
 }
 
+.debunked-source-link {
+  color: var(--dbk-accent);
+  text-decoration: none;
+  font-size: 11px;
+  opacity: 0.8;
+  transition: opacity 0.2s;
+}
+
+.debunked-source-link:hover {
+  opacity: 1;
+  text-decoration: underline;
+}
+
 /* --- Share Button --- */
 .debunked-sidebar-footer {
   display: flex;

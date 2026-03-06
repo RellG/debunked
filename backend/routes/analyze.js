@@ -89,7 +89,7 @@ router.post('/', async (req, res) => {
           model: SEARCH_MODEL,
           web_search_options: {},
           messages: [
-            { role: 'system', content: 'You are a research assistant. Search the web and provide a brief factual summary of the key claims and events mentioned in the following content. Focus on verifying specific facts, statistics, dates, and events. Be concise — 300 words max.' },
+            { role: 'system', content: 'You are a research assistant. Search the web and provide a brief factual summary of the key claims and events mentioned in the following content. Focus on verifying specific facts, statistics, dates, and events. For each fact you find, include the source URL in parentheses, e.g. "The event was confirmed (https://reuters.com/article/...)". Be concise — 300 words max.' },
             { role: 'user', content: truncated.slice(0, 3000) }
           ]
         })

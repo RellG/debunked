@@ -41,7 +41,7 @@ window.Debunked.Sidebar = {
       const sourcesHtml = (claim.sources && claim.sources.length > 0)
         ? `<div class="debunked-claim-sources">
             <span class="debunked-sources-label">Sources</span>
-            <ul>${claim.sources.map(s => `<li>${this.escapeHtml(s)}</li>`).join('')}</ul>
+            <ul>${claim.sources.map(s => `<li>${this.formatSource(s)}</li>`).join('')}</ul>
           </div>`
         : '';
 
@@ -238,6 +238,17 @@ window.Debunked.Sidebar = {
       unverified: '<svg width="12" height="12" viewBox="0 0 12 12" fill="currentColor"><circle cx="6" cy="8.5" r=".75"/><path d="M6 1.5A2.5 2.5 0 003.5 4h1.25A1.25 1.25 0 016 2.75c.69 0 1.25.56 1.25 1.25 0 .69-.56 1.25-1.25 1.25-.35 0-.625.28-.625.625V7h1.25v-.56A2.5 2.5 0 006 1.5z"/></svg>'
     };
     return icons[verdict] || '';
+  },
+
+  formatSource(str) {
+    // Extract URL from source text and make it clickable
+    const urlMatch = str.match(/(https?:\/\/[^\s)]+)/);
+    if (!urlMatch) return this.escapeHtml(str);
+    const url = urlMatch[1];
+    const text = str.replace(url, '').replace(/\s*[—\-–]\s*$/, '').replace(/\s*\(\s*\)\s*/, '').trim();
+    const domain = url.replace(/^https?:\/\//, '').split('/')[0].replace(/^www\./, '');
+    const displayText = text || domain;
+    return `${this.escapeHtml(displayText)} <a href="${this.escapeHtml(url)}" target="_blank" rel="noopener noreferrer" class="debunked-source-link">${this.escapeHtml(domain)}</a>`;
   },
 
   escapeHtml(str) {
