@@ -511,67 +511,144 @@ mark.debunked-claim:hover {
 .debunked-meter-segment:nth-child(4) { animation-delay: 0.25s; }
 .debunked-meter-segment:nth-child(5) { animation-delay: 0.3s; }
 
-/* --- Loading Indicator (top bar) --- */
+/* --- Loading Indicator (floating toast) --- */
 #debunked-loader {
   position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
+  bottom: 32px;
+  right: 32px;
   z-index: 2147483647;
-  background: var(--dbk-bg-primary);
-  border-bottom: 1px solid var(--dbk-border);
+  background: #12141c;
+  border: 1px solid rgba(108, 140, 255, 0.25);
+  border-radius: 16px;
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding: 12px 20px;
-  font-family: var(--dbk-font);
-  transform: translateY(-100%);
+  gap: 14px;
+  padding: 16px 22px;
+  font-family: 'Outfit', -apple-system, BlinkMacSystemFont, sans-serif;
+  transform: translateY(20px) scale(0.95);
   opacity: 0;
   transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(108, 140, 255, 0.08), 0 0 60px rgba(108, 140, 255, 0.06);
+  pointer-events: none;
+  max-width: 340px;
 }
 
 #debunked-loader.visible {
-  transform: translateY(0);
+  transform: translateY(0) scale(1);
   opacity: 1;
+  pointer-events: auto;
 }
 
 #debunked-loader.hiding {
-  transform: translateY(-100%);
+  transform: translateY(20px) scale(0.95);
   opacity: 0;
 }
 
 .debunked-loader-icon {
-  color: var(--dbk-accent);
+  color: #6c8cff;
   display: flex;
   align-items: center;
-  animation: dbk-loader-pulse 1.5s ease-in-out infinite;
+  flex-shrink: 0;
+  width: 36px;
+  height: 36px;
+  background: rgba(108, 140, 255, 0.1);
+  border-radius: 10px;
+  justify-content: center;
+  animation: dbk-loader-glow 2s ease-in-out infinite;
 }
 
-@keyframes dbk-loader-pulse {
-  0%, 100% { opacity: 1; transform: scale(1); }
-  50% { opacity: 0.6; transform: scale(0.92); }
+@keyframes dbk-loader-glow {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(108, 140, 255, 0.2); }
+  50% { box-shadow: 0 0 16px 4px rgba(108, 140, 255, 0.15); }
+}
+
+.debunked-loader-content {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+}
+
+.debunked-loader-label {
+  font-size: 11px;
+  font-weight: 700;
+  color: #6c8cff;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
 }
 
 .debunked-loader-text {
   font-size: 13px;
   font-weight: 500;
-  color: var(--dbk-text-secondary);
+  color: #9aa0b0;
   letter-spacing: 0.2px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .debunked-loader-progress {
   position: absolute;
   bottom: 0;
-  left: 0;
-  height: 2px;
-  background: linear-gradient(90deg, var(--dbk-accent), #a78bfa, var(--dbk-accent));
-  background-size: 200% 100%;
-  animation: dbk-progress-shimmer 2s linear infinite;
-  width: 100%;
+  left: 16px;
+  right: 16px;
+  height: 3px;
+  border-radius: 2px;
+  background: rgba(108, 140, 255, 0.1);
+  overflow: hidden;
 }
 
-@keyframes dbk-progress-shimmer {
-  0% { background-position: -200% 0; }
-  100% { background-position: 200% 0; }
+.debunked-loader-progress::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  width: 40%;
+  border-radius: 2px;
+  background: linear-gradient(90deg, #6c8cff, #a78bfa);
+  animation: dbk-progress-slide 1.5s ease-in-out infinite;
+}
+
+@keyframes dbk-progress-slide {
+  0% { left: -40%; }
+  100% { left: 100%; }
+}
+
+/* --- Source Citations --- */
+.debunked-claim-sources {
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px solid rgba(255, 255, 255, 0.04);
+}
+
+.debunked-sources-label {
+  font-family: var(--dbk-font);
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--dbk-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.debunked-claim-sources ul {
+  list-style: none;
+  padding: 0;
+  margin: 6px 0 0;
+}
+
+.debunked-claim-sources li {
+  font-size: 12px;
+  color: var(--dbk-text-secondary);
+  line-height: 1.5;
+  padding: 3px 0 3px 14px;
+  position: relative;
+}
+
+.debunked-claim-sources li::before {
+  content: '›';
+  position: absolute;
+  left: 0;
+  color: var(--dbk-accent);
+  font-weight: 700;
 }

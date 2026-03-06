@@ -38,6 +38,13 @@ window.Debunked.Sidebar = {
     for (let i = 0; i < analysis.claims.length; i++) {
       const claim = analysis.claims[i];
       const verdictIcon = this.verdictIcon(claim.verdict);
+      const sourcesHtml = (claim.sources && claim.sources.length > 0)
+        ? `<div class="debunked-claim-sources">
+            <span class="debunked-sources-label">Sources</span>
+            <ul>${claim.sources.map(s => `<li>${this.escapeHtml(s)}</li>`).join('')}</ul>
+          </div>`
+        : '';
+
       claimsHtml += `
         <div class="debunked-claim-card" id="debunked-claim-${claim.id}">
           <div class="debunked-claim-verdict debunked-verdict-${claim.verdict}">
@@ -45,6 +52,7 @@ window.Debunked.Sidebar = {
           </div>
           <blockquote class="debunked-claim-quote">${this.escapeHtml(claim.originalQuote || claim.text)}</blockquote>
           <p class="debunked-claim-explanation">${this.escapeHtml(claim.explanation)}</p>
+          ${sourcesHtml}
         </div>
       `;
     }
@@ -119,18 +127,34 @@ window.Debunked.Sidebar = {
   buildMeter(stats) {
     if (stats.total === 0) return '';
     const segments = [];
-    const total = Math.max(stats.total, 5);
-    const greenSegs = Math.round((stats.green / total) * 5);
-    const redSegs = Math.round((stats.red / total) * 5);
-    const yellowSegs = 5 - greenSegs - redSegs;
+    // Distribute 5 segments proportionally based on actual claim verdicts
+    const total = stats.total;
+    let greenSegs = Math.round((stats.green / total) * 5);
+    let redSegs = Math.round((stats.red / total) * 5);
+    let yellowSegs = Math.round((stats.yellow / total) * 5);
 
-    for (let i = 0; i < 5; i++) {
-      let cls = 'debunked-meter-segment';
-      if (i < greenSegs) cls += ' filled seg-green';
-      else if (i < greenSegs + yellowSegs) cls += ' filled seg-yellow';
-      else cls += ' filled seg-red';
-      segments.push(`<div class="${cls}"></div>`);
+    // Adjust to exactly 5 segments — prioritize the largest group
+    let sum = greenSegs + yellowSegs + redSegs;
+    while (sum < 5) {
+      if (stats.green >= stats.yellow && stats.green >= stats.red) greenSegs++;
+      else if (stats.yellow >= stats.red) yellowSegs++;
+      else redSegs++;
+      sum++;
     }
+    while (sum > 5) {
+      if (greenSegs > 0 && stats.green <= stats.yellow && stats.green <= stats.red) greenSegs--;
+      else if (yellowSegs > 0 && stats.yellow <= stats.red) yellowSegs--;
+      else if (redSegs > 0) redSegs--;
+      else if (yellowSegs > 0) yellowSegs--;
+      else greenSegs--;
+      sum--;
+    }
+
+    // Only show colored segments for categories that have claims
+    for (let i = 0; i < greenSegs; i++) segments.push('<div class="debunked-meter-segment filled seg-green"></div>');
+    for (let i = 0; i < yellowSegs; i++) segments.push('<div class="debunked-meter-segment filled seg-yellow"></div>');
+    for (let i = 0; i < redSegs; i++) segments.push('<div class="debunked-meter-segment filled seg-red"></div>');
+
     return `<div class="debunked-confidence-meter">${segments.join('')}</div>`;
   },
 
