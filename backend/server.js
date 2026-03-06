@@ -3,6 +3,7 @@ const cors = require('cors');
 const rateLimit = require('express-rate-limit');
 const analyzeRouter = require('./routes/analyze');
 const domainsRouter = require('./routes/domains');
+const { initDb, cleanExpiredCache } = require('./db');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -35,15 +36,31 @@ app.use(rateLimit({
   }
 }));
 
-app.get('/api/health', (req, res) => {
-  res.json({ status: 'ok', version: '2.0.0', model: process.env.OPENAI_MODEL || 'gpt-4.1-mini', timestamp: new Date().toISOString() });
+app.get('/api/health', async (req, res) => {
+  const dbStatus = process.env.DATABASE_URL ? 'connected' : 'disabled';
+  res.json({ status: 'ok', version: '3.0.0', model: process.env.OPENAI_MODEL || 'gpt-4.1-mini', database: dbStatus, timestamp: new Date().toISOString() });
 });
 
 app.use('/api/analyze', analyzeRouter);
 app.use('/api/domains', domainsRouter);
 
-app.listen(PORT, () => {
-  console.log(`[Debunked v2] Backend running on port ${PORT}`);
-  console.log(`[Debunked v2] Model: ${process.env.OPENAI_MODEL || 'gpt-4.1-mini'}`);
-  console.log(`[Debunked v2] API key: ${process.env.OPENAI_API_KEY ? 'configured' : 'MISSING'}`);
+async function start() {
+  if (process.env.DATABASE_URL) {
+    await initDb();
+    setInterval(cleanExpiredCache, 60 * 60 * 1000);
+  } else {
+    console.warn('[Debunked] DATABASE_URL not set — caching disabled');
+  }
+
+  app.listen(PORT, () => {
+    console.log(`[Debunked v3] Backend running on port ${PORT}`);
+    console.log(`[Debunked v3] Model: ${process.env.OPENAI_MODEL || 'gpt-4.1-mini'}`);
+    console.log(`[Debunked v3] API key: ${process.env.OPENAI_API_KEY ? 'configured' : 'MISSING'}`);
+    console.log(`[Debunked v3] Database: ${process.env.DATABASE_URL ? 'connected' : 'disabled'}`);
+  });
+}
+
+start().catch(err => {
+  console.error('[Debunked] Failed to start:', err);
+  process.exit(1);
 });
