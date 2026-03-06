@@ -3,6 +3,7 @@ const cors = require('cors');
 const rateLimit = require('express-rate-limit');
 const analyzeRouter = require('./routes/analyze');
 const domainsRouter = require('./routes/domains');
+const shareRouter = require('./routes/share');
 const { initDb, cleanExpiredCache } = require('./db');
 
 const app = express();
@@ -43,6 +44,8 @@ app.get('/api/health', async (req, res) => {
 
 app.use('/api/analyze', analyzeRouter);
 app.use('/api/domains', domainsRouter);
+app.use('/api/share', shareRouter);
+app.use('/share', shareRouter);
 
 async function start() {
   if (process.env.DATABASE_URL) {

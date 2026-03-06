@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Debunked Fact-Check</title>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Source+Serif+4:ital,wght@0,400;1,400&display=swap" rel="stylesheet">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { background: #0d0f14; color: #e8eaed; font-family: 'Outfit', sans-serif; min-height: 100vh; }
+    .container { max-width: 680px; margin: 0 auto; padding: 40px 24px; }
+    .header { text-align: center; margin-bottom: 32px; }
+    .logo { font-size: 14px; font-weight: 700; letter-spacing: 5px; color: #6c8cff; margin-bottom: 8px; }
+    .source-url { font-size: 13px; color: #5c6275; word-break: break-all; }
+    .date { font-size: 12px; color: #3a3d4e; margin-top: 4px; }
+    .verdict-bar { display: flex; align-items: center; gap: 10px; padding: 14px 18px; border-radius: 12px; font-weight: 600; font-size: 14px; margin-bottom: 16px; border: 1px solid transparent; }
+    .verdict-green { background: rgba(52,211,153,0.08); border-color: rgba(52,211,153,0.25); color: #34d399; }
+    .verdict-yellow { background: rgba(251,191,36,0.08); border-color: rgba(251,191,36,0.25); color: #fbbf24; }
+    .verdict-red { background: rgba(248,113,113,0.08); border-color: rgba(248,113,113,0.25); color: #f87171; }
+    .verdict-dot { width: 8px; height: 8px; border-radius: 50%; }
+    .verdict-green .verdict-dot { background: #34d399; }
+    .verdict-yellow .verdict-dot { background: #fbbf24; }
+    .verdict-red .verdict-dot { background: #f87171; }
+    .summary { font-family: 'Source Serif 4', Georgia, serif; font-style: italic; color: #9aa0b0; line-height: 1.6; margin-bottom: 28px; font-size: 15px; }
+    .section-title { font-size: 11px; font-weight: 600; color: #5c6275; text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 14px; display: flex; align-items: center; gap: 8px; }
+    .section-title::after { content: ''; flex: 1; height: 1px; background: rgba(255,255,255,0.06); }
+    .claim-card { background: #1a1d2b; border: 1px solid rgba(255,255,255,0.06); border-radius: 12px; padding: 16px; margin-bottom: 12px; }
+    .claim-verdict { font-size: 10px; font-weight: 700; letter-spacing: 1px; padding: 4px 10px; border-radius: 6px; display: inline-block; margin-bottom: 10px; text-transform: uppercase; }
+    .v-true, .v-mostly_true { background: rgba(52,211,153,0.08); color: #34d399; }
+    .v-misleading, .v-unverified { background: rgba(251,191,36,0.08); color: #fbbf24; }
+    .v-false { background: rgba(248,113,113,0.08); color: #f87171; }
+    .claim-quote { font-family: 'Source Serif 4', serif; font-style: italic; padding: 10px 14px; background: rgba(255,255,255,0.02); border-left: 3px solid rgba(255,255,255,0.06); border-radius: 0 8px 8px 0; margin-bottom: 10px; font-size: 13px; line-height: 1.55; }
+    .claim-explanation { font-size: 13px; color: #9aa0b0; line-height: 1.55; }
+    .claim-sources { margin-top: 10px; padding-top: 10px; border-top: 1px solid rgba(255,255,255,0.04); }
+    .claim-sources span { font-size: 10px; font-weight: 600; color: #5c6275; text-transform: uppercase; letter-spacing: 1px; }
+    .claim-sources ul { list-style: none; padding: 0; margin: 6px 0 0; }
+    .claim-sources li { font-size: 12px; color: #9aa0b0; padding: 3px 0 3px 14px; position: relative; }
+    .claim-sources li::before { content: '›'; position: absolute; left: 0; color: #6c8cff; font-weight: 700; }
+    .fallacy-card { background: #1a1d2b; border: 1px solid rgba(251,191,36,0.1); border-radius: 12px; padding: 14px 16px; margin-bottom: 10px; }
+    .fallacy-card strong { color: #fbbf24; font-size: 12px; text-transform: capitalize; }
+    .fallacy-card p { margin-top: 6px; color: #9aa0b0; font-size: 13px; line-height: 1.55; }
+    .footer { text-align: center; margin-top: 40px; padding-top: 20px; border-top: 1px solid rgba(255,255,255,0.06); font-size: 12px; color: #3a3d4e; }
+    .footer a { color: #6c8cff; text-decoration: none; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <div class="logo">DEBUNKED</div>
+      <div class="source-url">{{URL}}</div>
+      <div class="date">Analyzed on {{DATE}}</div>
+    </div>
+    <div id="content"></div>
+    <div class="footer">
+      Fact-checked by <a href="https://debunked.app">Debunked AI</a> — Install the free Chrome extension
+    </div>
+  </div>
+  <script>
+    const analysis = {{ANALYSIS_JSON}};
+    const verdictLabels = { green: 'Content Verified', yellow: 'Mixed Accuracy', red: 'Issues Detected' };
+    const claimLabels = { true: 'Verified', mostly_true: 'Mostly True', misleading: 'Misleading', false: 'False', unverified: 'Unverified' };
+    function esc(s) { const d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
+
+    let html = '';
+    const v = analysis.overallVerdict || 'yellow';
+    html += `<div class="verdict-bar verdict-${v}"><span class="verdict-dot"></span> ${verdictLabels[v]}</div>`;
+    html += `<p class="summary">${esc(analysis.summary)}</p>`;
+    html += `<div class="section-title">Claims Analyzed (${analysis.claims.length})</div>`;
+
+    for (const c of analysis.claims) {
+      let sourcesHtml = '';
+      if (c.sources && c.sources.length) {
+        sourcesHtml = `<div class="claim-sources"><span>Sources</span><ul>${c.sources.map(s => `<li>${esc(s)}</li>`).join('')}</ul></div>`;
+      }
+      html += `<div class="claim-card">
+        <div class="claim-verdict v-${c.verdict}">${claimLabels[c.verdict] || c.verdict}</div>
+        <div class="claim-quote">${esc(c.originalQuote || c.text)}</div>
+        <p class="claim-explanation">${esc(c.explanation)}</p>
+        ${sourcesHtml}
+      </div>`;
+    }
+
+    if (analysis.fallacies && analysis.fallacies.length) {
+      html += `<div class="section-title" style="margin-top:24px">Fallacies Detected</div>`;
+      for (const f of analysis.fallacies) {
+        html += `<div class="fallacy-card"><strong>${esc(f.type.replace(/_/g, ' '))}</strong><p>${esc(f.explanation)}</p></div>`;
+      }
+    }
+
+    document.getElementById('content').innerHTML = html;
+  </script>
+</body>
+</html>
