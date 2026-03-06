@@ -5,6 +5,10 @@ const { pool } = require('../db');
 
 const router = express.Router();
 
+function escapeHtml(str) {
+  return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+}
+
 // POST /api/share — save analysis for sharing
 router.post('/', async (req, res) => {
   if (!process.env.DATABASE_URL) {
@@ -48,14 +52,19 @@ router.get('/:id', async (req, res) => {
     }
 
     const { url, response, created_at } = result.rows[0];
-    const analysis = typeof response === 'string' ? JSON.parse(response) : response;
+    let analysis;
+    try {
+      analysis = typeof response === 'string' ? JSON.parse(response) : response;
+    } catch {
+      return res.status(500).send('Error: corrupted data');
+    }
 
     const fs = require('fs');
     const template = fs.readFileSync(path.join(__dirname, '..', 'views', 'share.html'), 'utf-8');
     const html = template
-      .replace('{{URL}}', url)
+      .replace('{{URL}}', escapeHtml(url))
       .replace('{{DATE}}', new Date(created_at).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }))
-      .replace('{{ANALYSIS_JSON}}', JSON.stringify(analysis));
+      .replace('{{ANALYSIS_JSON}}', JSON.stringify(analysis).replace(/</g, '\\u003c'));
 
     res.send(html);
   } catch (err) {
