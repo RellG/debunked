@@ -10,6 +10,11 @@ chrome.runtime.onInstalled.addListener(async (details) => {
     const deviceId = crypto.randomUUID();
     await chrome.storage.local.set({ deviceId });
     console.log('[Debunked] Device ID generated:', deviceId.slice(0, 8) + '...');
+
+    // Open onboarding page
+    chrome.tabs.create({
+      url: chrome.runtime.getURL('src/onboarding/onboarding.html')
+    });
   }
 });
 
