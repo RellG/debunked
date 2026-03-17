@@ -707,3 +707,67 @@ mark.debunked-claim:hover {
   color: var(--dbk-text-muted);
   letter-spacing: 0.5px;
 }
+
+/* --- Toast Notifications --- */
+#debunked-toast {
+  position: fixed;
+  bottom: 32px;
+  right: 32px;
+  z-index: 2147483647;
+  background: #12141c;
+  border: 1px solid rgba(92, 98, 117, 0.25);
+  border-radius: 16px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 16px 22px;
+  font-family: 'Outfit', -apple-system, BlinkMacSystemFont, sans-serif;
+  transform: translateY(20px) scale(0.95);
+  opacity: 0;
+  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.5);
+  pointer-events: none;
+  max-width: 340px;
+}
+
+#debunked-toast.visible {
+  transform: translateY(0) scale(1);
+  opacity: 1;
+  pointer-events: auto;
+}
+
+#debunked-toast.hiding {
+  transform: translateY(20px) scale(0.95);
+  opacity: 0;
+}
+
+.debunked-toast-icon {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  justify-content: center;
+}
+
+.debunked-toast-content {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.debunked-toast-label {
+  font-size: 11px;
+  font-weight: 700;
+  color: #5c6275;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+}
+
+.debunked-toast-text {
+  font-size: 13px;
+  font-weight: 500;
+  color: #9aa0b0;
+  letter-spacing: 0.2px;
+}

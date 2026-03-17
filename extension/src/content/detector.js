@@ -123,6 +123,57 @@ window.Debunked.Detector = {
     }, 400);
   },
 
+  toastEl: null,
+  toastTimeout: null,
+
+  showToast(type, message) {
+    this.hideLoader();
+    this.hideToast();
+
+    const colors = {
+      empty: { icon: '#5c6275', border: 'rgba(92, 98, 117, 0.25)' },
+      error: { icon: '#f87171', border: 'rgba(248, 113, 113, 0.25)' },
+      rateLimit: { icon: '#fbbf24', border: 'rgba(251, 191, 36, 0.25)' }
+    };
+    const style = colors[type] || colors.error;
+
+    this.toastEl = document.createElement('div');
+    this.toastEl.id = 'debunked-toast';
+    this.toastEl.innerHTML = `
+      <div class="debunked-toast-icon" style="color: ${style.icon}; background: ${style.icon}15;">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+          <path d="M12 2L3 7v5c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V7l-9-5z" stroke="currentColor" stroke-width="1.5" fill="none"/>
+        </svg>
+      </div>
+      <div class="debunked-toast-content">
+        <span class="debunked-toast-label">Debunked</span>
+        <span class="debunked-toast-text"></span>
+      </div>
+    `;
+    // Set message via textContent to prevent XSS
+    this.toastEl.querySelector('.debunked-toast-text').textContent = message;
+    this.toastEl.style.borderColor = style.border;
+    document.body.appendChild(this.toastEl);
+
+    requestAnimationFrame(() => this.toastEl.classList.add('visible'));
+
+    const duration = type === 'empty' ? 4000 : 5000;
+    this.toastTimeout = setTimeout(() => this.hideToast(), duration);
+  },
+
+  hideToast() {
+    if (this.toastTimeout) {
+      clearTimeout(this.toastTimeout);
+      this.toastTimeout = null;
+    }
+    if (!this.toastEl) return;
+    this.toastEl.classList.remove('visible');
+    this.toastEl.classList.add('hiding');
+    const el = this.toastEl;
+    this.toastEl = null;
+    setTimeout(() => el.remove(), 400);
+  },
+
   async analyze() {
     if (this.isAnalyzing) return;
     this.isAnalyzing = true;
