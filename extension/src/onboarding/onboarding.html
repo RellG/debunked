@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Welcome to Debunked</title>
+  <link rel="stylesheet" href="onboarding.css">
+</head>
+<body>
+  <div class="onboarding-container">
+    <div class="slides-wrapper">
+      <!-- Slide 1: Welcome -->
+      <div class="slide active" data-slide="0">
+        <div class="slide-icon">
+          <svg width="64" height="64" viewBox="0 0 24 24" fill="none">
+            <path d="M12 2L3 7v5c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V7l-9-5z" stroke="url(#onbGrad)" stroke-width="1.5" fill="none"/>
+            <path d="M8.5 12.5L11 15l5-6" stroke="url(#onbGrad)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+            <defs>
+              <linearGradient id="onbGrad" x1="3" y1="2" x2="21" y2="19">
+                <stop offset="0%" stop-color="#6c8cff"/>
+                <stop offset="100%" stop-color="#a78bfa"/>
+              </linearGradient>
+            </defs>
+          </svg>
+        </div>
+        <h1>Welcome to Debunked</h1>
+        <p>AI-powered fact-checking for the news you read</p>
+      </div>
+
+      <!-- Slide 2: How It Works -->
+      <div class="slide" data-slide="1">
+        <h1>How It Works</h1>
+        <div class="steps">
+          <div class="step">
+            <div class="step-num">1</div>
+            <div class="step-info">
+              <strong>Extract</strong>
+              <span>We read the article content on the page</span>
+            </div>
+          </div>
+          <div class="step">
+            <div class="step-num">2</div>
+            <div class="step-info">
+              <strong>Search</strong>
+              <span>AI searches the web for relevant sources</span>
+            </div>
+          </div>
+          <div class="step">
+            <div class="step-num">3</div>
+            <div class="step-info">
+              <strong>Verify</strong>
+              <span>Each claim is fact-checked with cited sources</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Slide 3: Get Started -->
+      <div class="slide" data-slide="2">
+        <div class="slide-icon">
+          <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#6c8cff" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="11" cy="11" r="8"/>
+            <path d="M21 21l-4.35-4.35"/>
+          </svg>
+        </div>
+        <h1>You're All Set</h1>
+        <p>Visit any news site and click <strong>Analyze</strong> in the extension popup — or let Debunked auto-analyze known news sites.</p>
+        <button class="cta-btn" id="start-btn">Start Fact-Checking</button>
+      </div>
+    </div>
+
+    <div class="nav-controls">
+      <button class="nav-btn" id="prev-btn" style="visibility: hidden;">Back</button>
+      <div class="dots" id="dots">
+        <span class="dot active"></span>
+        <span class="dot"></span>
+        <span class="dot"></span>
+      </div>
+      <button class="nav-btn nav-next" id="next-btn">Next</button>
+    </div>
+  </div>
+  <script src="onboarding.js"></script>
+</body>
+</html>
