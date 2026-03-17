@@ -42,7 +42,45 @@ async function setCache(urlHash, url, response, contentType) {
   }
 }
 
-router.post('/', async (req, res) => {
+async function checkDeviceRateLimit(req, res, next) {
+  const deviceId = req.headers['x-device-id'];
+  if (!deviceId || !process.env.DATABASE_URL) {
+    return next(); // No device tracking — fall through to IP rate limit
+  }
+
+  try {
+    const result = await pool.query(
+      `INSERT INTO device_usage (device_id, usage_date, count)
+       VALUES ($1, CURRENT_DATE, 1)
+       ON CONFLICT (device_id, usage_date)
+       DO UPDATE SET count = device_usage.count + 1
+       RETURNING count`,
+      [deviceId]
+    );
+
+    const count = result.rows[0].count;
+    const remaining = Math.max(0, 10 - count);
+
+    res.set('X-RateLimit-Limit', '10');
+    res.set('X-RateLimit-Remaining', String(remaining));
+
+    if (count > 10) {
+      console.log(`[RateLimit] Device ${deviceId.slice(0, 8)}... exceeded daily limit (${count})`);
+      return res.status(429).json({
+        error: 'Daily limit reached',
+        limit: 10,
+        remaining: 0
+      });
+    }
+
+    next();
+  } catch (err) {
+    console.error('[RateLimit] Check failed:', err.message);
+    next(); // Fail open — don't block on DB errors
+  }
+}
+
+router.post('/', checkDeviceRateLimit, async (req, res) => {
   const startTime = Date.now();
   const { content, type, url } = req.body;
   const requestId = Math.random().toString(36).slice(2, 8);
