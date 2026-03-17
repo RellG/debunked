@@ -176,6 +176,17 @@ window.Debunked.Detector = {
 
   async analyze() {
     if (this.isAnalyzing) return;
+
+    // Check rate limit before starting
+    try {
+      const { rateLimitRemaining, rateLimitDate } = await chrome.storage.local.get(['rateLimitRemaining', 'rateLimitDate']);
+      const today = new Date().toISOString().slice(0, 10);
+      if (rateLimitDate === today && rateLimitRemaining === 0) {
+        this.showToast('rateLimit', 'Daily limit reached (10/10)');
+        return;
+      }
+    } catch { /* proceed if storage check fails */ }
+
     this.isAnalyzing = true;
 
     this.showLoader();
@@ -202,11 +213,30 @@ window.Debunked.Detector = {
         }
       });
 
+      if (response?.error === 'rateLimited') {
+        this.hideLoader();
+        this.showToast('rateLimit', 'Daily limit reached (10/10)');
+        chrome.runtime.sendMessage({ action: 'analysisFailed' });
+        return;
+      }
+
+      if (response?.error === 'failed') {
+        this.hideLoader();
+        this.showToast('error', 'Analysis failed. Please try again.');
+        chrome.runtime.sendMessage({ action: 'analysisFailed' });
+        return;
+      }
+
       if (response && response.claims) {
+        if (response.claims.length === 0) {
+          this.showToast('empty', 'No verifiable claims found on this page');
+          chrome.runtime.sendMessage({ action: 'analysisEmpty' });
+          return;
+        }
+
         this.analysisResult = response;
         this.updateLoader(`Found ${response.claims.length} claims. Rendering results...`);
 
-        // Small delay so users see the final status before sidebar opens
         await new Promise(r => setTimeout(r, 600));
 
         window.Debunked.Highlighter.highlightClaims(response.claims);
@@ -223,6 +253,7 @@ window.Debunked.Detector = {
       }
     } catch (err) {
       console.error('[Debunked] Analysis failed:', err);
+      this.showToast('error', 'Analysis failed. Please try again.');
       chrome.runtime.sendMessage({ action: 'analysisFailed' });
     } finally {
       this.isAnalyzing = false;
