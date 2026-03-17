@@ -1,9 +1,16 @@
 const BACKEND_URL = 'https://debunked-production.up.railway.app';
 
 // Update domain list periodically
-chrome.runtime.onInstalled.addListener(async () => {
+chrome.runtime.onInstalled.addListener(async (details) => {
   await updateDomains();
   chrome.alarms.create('updateDomains', { periodInMinutes: 24 * 60 });
+
+  if (details.reason === 'install') {
+    // Generate device UUID
+    const deviceId = crypto.randomUUID();
+    await chrome.storage.local.set({ deviceId });
+    console.log('[Debunked] Device ID generated:', deviceId.slice(0, 8) + '...');
+  }
 });
 
 chrome.alarms.onAlarm.addListener(async (alarm) => {
@@ -55,16 +62,43 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 
 async function analyzeContent(payload) {
   try {
+    const { deviceId } = await chrome.storage.local.get('deviceId');
+    const headers = { 'Content-Type': 'application/json' };
+    if (deviceId) {
+      headers['X-Device-ID'] = deviceId;
+    }
+
     const resp = await fetch(`${BACKEND_URL}/api/analyze`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers,
       body: JSON.stringify(payload)
     });
+
+    // Parse rate limit headers
+    const remaining = resp.headers.get('X-RateLimit-Remaining');
+    if (remaining !== null) {
+      const today = new Date().toISOString().slice(0, 10);
+      await chrome.storage.local.set({
+        rateLimitRemaining: parseInt(remaining, 10),
+        rateLimitDate: today
+      });
+    }
+
+    if (resp.status === 429) {
+      const body = await resp.json();
+      if (body.limit) {
+        // Device rate limit (not IP rate limit)
+        await chrome.storage.local.set({ rateLimitRemaining: 0, rateLimitDate: new Date().toISOString().slice(0, 10) });
+        return { error: 'rateLimited', message: body.error };
+      }
+    }
+
     if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
     return await resp.json();
   } catch (err) {
     console.error('[Debunked] Backend analysis failed:', err.message);
     return {
+      error: 'failed',
       overallVerdict: 'yellow',
       summary: 'Analysis temporarily unavailable. Please try again.',
       claims: [],
