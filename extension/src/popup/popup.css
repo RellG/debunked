@@ -224,3 +224,33 @@ footer {
   color: #9aa0b0;
   background: rgba(255, 255, 255, 0.04);
 }
+
+/* --- Rate Limit Info --- */
+.rate-limit-info {
+  font-size: 11px;
+  color: #5c6275;
+  text-align: center;
+  margin-top: 8px;
+  letter-spacing: 0.5px;
+}
+
+.rate-limit-info.limit-reached {
+  color: #fbbf24;
+}
+
+/* --- Privacy Link --- */
+.privacy-link {
+  font-size: 10px;
+  color: #3a3d4e;
+  text-decoration: none;
+  letter-spacing: 0.5px;
+  transition: color 0.2s;
+}
+
+.privacy-link:hover {
+  color: #6c8cff;
+}
+
+footer {
+  gap: 8px;
+}

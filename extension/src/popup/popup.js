@@ -8,6 +8,31 @@ document.addEventListener('DOMContentLoaded', async () => {
     window.location.href = '../settings/settings.html';
   });
 
+  // Dynamic version
+  const versionEl = document.getElementById('version-text');
+  versionEl.textContent = 'v' + chrome.runtime.getManifest().version;
+
+  // Rate limit display
+  const rateLimitInfo = document.getElementById('rate-limit-info');
+  let isRateLimited = false;
+  try {
+    const { rateLimitRemaining, rateLimitDate } = await chrome.storage.local.get(['rateLimitRemaining', 'rateLimitDate']);
+    const today = new Date().toISOString().slice(0, 10);
+    if (rateLimitDate === today && rateLimitRemaining !== undefined) {
+      const used = 10 - rateLimitRemaining;
+      rateLimitInfo.textContent = `${used}/10 analyses today`;
+      rateLimitInfo.style.display = 'block';
+      if (rateLimitRemaining === 0) {
+        isRateLimited = true;
+        rateLimitInfo.textContent = 'Daily limit reached (10/10). Resets at midnight.';
+        rateLimitInfo.classList.add('limit-reached');
+        analyzeBtn.disabled = true;
+        analyzeBtnText.textContent = 'Limit Reached';
+        setStatus('empty', 'Daily analysis limit reached.');
+      }
+    }
+  } catch { /* ignore */ }
+
   const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
 
   if (tab) {
