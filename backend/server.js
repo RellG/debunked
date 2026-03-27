@@ -4,6 +4,7 @@ const rateLimit = require('express-rate-limit');
 const analyzeRouter = require('./routes/analyze');
 const domainsRouter = require('./routes/domains');
 const shareRouter = require('./routes/share');
+const path = require('path');
 const { initDb, cleanExpiredCache } = require('./db');
 
 const app = express();
@@ -14,6 +15,14 @@ app.set('trust proxy', 1);
 
 app.use(cors());
 app.use(express.json({ limit: '100kb' }));
+
+// Serve static files (privacy policy, etc.)
+app.use(express.static(path.join(__dirname, 'public')));
+
+// Clean URL for privacy policy
+app.get('/privacy', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'privacy.html'));
+});
 
 // Request logger
 app.use((req, res, next) => {
