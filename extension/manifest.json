@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Debunked",
-  "version": "3.0.0",
+  "version": "3.1.0",
   "description": "AI-powered fact-checking for political news, social media, and videos.",
   "permissions": ["storage", "activeTab", "alarms"],
   "host_permissions": ["https://debunked-production.up.railway.app/*"],
