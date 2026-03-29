@@ -147,6 +147,28 @@ body {
   box-shadow: 0 8px 30px rgba(108, 140, 255, 0.4);
 }
 
+.pin-reminder {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 18px;
+  background: rgba(251, 191, 36, 0.06);
+  border: 1px solid rgba(251, 191, 36, 0.15);
+  border-radius: 12px;
+  color: #fbbf24;
+  font-size: 13px;
+  margin-top: 4px;
+}
+
+.pin-reminder span {
+  color: #9aa0b0;
+  line-height: 1.5;
+}
+
+.pin-reminder strong {
+  color: #fbbf24;
+}
+
 .nav-controls {
   display: flex;
   align-items: center;
