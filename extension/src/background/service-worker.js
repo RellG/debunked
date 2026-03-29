@@ -1,4 +1,4 @@
-const BACKEND_URL = 'https://debunked-production.up.railway.app';
+const BACKEND_URL = 'https://debunked.live';
 
 // Update domain list periodically
 chrome.runtime.onInstalled.addListener(async (details) => {
