@@ -48,7 +48,7 @@ app.use(rateLimit({
 
 app.get('/api/health', async (req, res) => {
   const dbStatus = process.env.DATABASE_URL ? 'connected' : 'disabled';
-  res.json({ status: 'ok', version: '3.0.0', model: process.env.OPENAI_MODEL || 'gpt-4.1-mini', database: dbStatus, timestamp: new Date().toISOString() });
+  res.json({ status: 'ok', version: '3.1.0', model: process.env.OPENAI_MODEL || 'gpt-4.1-mini', database: dbStatus, timestamp: new Date().toISOString() });
 });
 
 app.use('/api/analyze', analyzeRouter);

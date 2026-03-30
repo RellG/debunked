@@ -220,6 +220,13 @@ window.Debunked.Detector = {
         return;
       }
 
+      if (response?.error === 'offline') {
+        this.hideLoader();
+        this.showToast('error', 'No internet connection. Check your network and try again.');
+        chrome.runtime.sendMessage({ action: 'analysisFailed' });
+        return;
+      }
+
       if (response?.error === 'failed') {
         this.hideLoader();
         this.showToast('error', 'Analysis failed. Please try again.');

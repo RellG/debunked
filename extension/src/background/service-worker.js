@@ -102,10 +102,11 @@ async function analyzeContent(payload) {
     return await resp.json();
   } catch (err) {
     console.error('[Debunked] Backend analysis failed:', err.message);
+    const isOffline = err.message === 'Failed to fetch' || err.message.includes('NetworkError');
     return {
-      error: 'failed',
+      error: isOffline ? 'offline' : 'failed',
       overallVerdict: 'yellow',
-      summary: 'Analysis temporarily unavailable. Please try again.',
+      summary: isOffline ? 'No internet connection.' : 'Analysis temporarily unavailable. Please try again.',
       claims: [],
       fallacies: []
     };
