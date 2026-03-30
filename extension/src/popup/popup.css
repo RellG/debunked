@@ -151,19 +151,21 @@ header .subtitle {
 }
 
 .btn-primary {
-  background: linear-gradient(135deg, #6c8cff 0%, #a78bfa 100%);
+  background: #20b2aa;
   color: white;
-  box-shadow: 0 4px 16px rgba(108, 140, 255, 0.25);
+  box-shadow: 0 4px 16px rgba(32, 178, 170, 0.25);
 }
 
 .btn-primary:hover {
-  box-shadow: 0 6px 24px rgba(108, 140, 255, 0.35);
+  background: #2cc4bc;
+  box-shadow: 0 6px 24px rgba(32, 178, 170, 0.35);
   transform: translateY(-1px);
 }
 
 .btn-primary:active {
   transform: translateY(0);
-  box-shadow: 0 2px 8px rgba(108, 140, 255, 0.2);
+  background: #1a9e97;
+  box-shadow: 0 2px 8px rgba(32, 178, 170, 0.2);
 }
 
 .btn-primary:disabled {
