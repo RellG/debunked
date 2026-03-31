@@ -29,7 +29,11 @@ window.Debunked.Extractors.article = {
     '.pg-article',
     '.zn-body__paragraph',      // CNN
     '.article-page',
-    '.story__content'
+    '.story__content',
+    '.RichTextStoryBody',        // AP News
+    '.Page-content',             // AP News
+    '.article-body-text',        // Various
+    '[data-testid="storyBody"]'  // Various React news sites
   ],
 
   HEADLINE_SELECTORS: [

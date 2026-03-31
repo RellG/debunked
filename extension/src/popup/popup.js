@@ -73,7 +73,35 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
     if (tab) {
-      chrome.tabs.sendMessage(tab.id, { action: 'analyze' }).catch(() => {});
+      try {
+        await chrome.tabs.sendMessage(tab.id, { action: 'analyze' });
+      } catch {
+        // Content script not loaded — inject it and retry
+        try {
+          await chrome.scripting.executeScript({
+            target: { tabId: tab.id },
+            files: [
+              'src/content/extractors/article.js',
+              'src/content/extractors/twitter.js',
+              'src/content/extractors/reddit.js',
+              'src/content/extractors/youtube.js',
+              'src/content/extractors/generic.js',
+              'src/content/detector.js',
+              'src/content/highlighter.js',
+              'src/content/sidebar.js'
+            ]
+          });
+          await chrome.scripting.insertCSS({
+            target: { tabId: tab.id },
+            files: ['src/content/content.css']
+          });
+          // Give scripts a moment to initialize
+          await new Promise(r => setTimeout(r, 300));
+          await chrome.tabs.sendMessage(tab.id, { action: 'analyze' });
+        } catch (e) {
+          console.error('[Debunked] Failed to inject content scripts:', e);
+        }
+      }
     }
 
     setTimeout(() => window.close(), 600);
