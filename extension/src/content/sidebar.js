@@ -108,7 +108,9 @@ window.Debunked.Sidebar = {
       </div>
     `;
 
-    document.body.appendChild(this.sidebarEl);
+    // Append to documentElement instead of body to avoid parent
+    // CSS transforms breaking position:fixed (e.g. Yahoo Finance)
+    document.documentElement.appendChild(this.sidebarEl);
 
     this.sidebarEl.querySelector('#debunked-close').addEventListener('click', () => {
       this.toggle();
@@ -198,7 +200,7 @@ window.Debunked.Sidebar = {
     this.tabEl.innerHTML = `<svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2L3 7v5c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V7l-9-5zm-1 15l-4-4 1.41-1.41L11 14.17l6.59-6.59L19 9l-8 8z"/></svg>`;
     this.tabEl.title = 'Toggle Debunked sidebar';
     this.tabEl.addEventListener('click', () => this.toggle());
-    document.body.appendChild(this.tabEl);
+    document.documentElement.appendChild(this.tabEl);
   },
 
   toggle() {

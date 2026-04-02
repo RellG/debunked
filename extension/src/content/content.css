@@ -81,8 +81,8 @@ mark.debunked-claim:hover {
 
 /* --- Sidebar Panel --- */
 #debunked-sidebar {
-  position: fixed;
-  top: 0;
+  position: fixed !important;
+  top: 0 !important;
   right: -420px;
   width: 420px;
   height: 100vh;
@@ -90,13 +90,16 @@ mark.debunked-claim:hover {
   color: var(--dbk-text-primary);
   font-family: var(--dbk-font);
   font-size: 14px;
-  z-index: 2147483647;
+  z-index: 2147483647 !important;
   box-shadow: var(--dbk-shadow);
   display: flex;
   flex-direction: column;
   transition: right 0.4s cubic-bezier(0.16, 1, 0.3, 1);
   overflow: hidden;
   border-left: 1px solid var(--dbk-border);
+  /* Prevent parent transforms from breaking fixed positioning */
+  contain: layout style paint;
+  transform: none !important;
 }
 
 #debunked-sidebar.open {
@@ -404,9 +407,9 @@ mark.debunked-claim:hover {
 
 /* --- Edge Tab --- */
 #debunked-tab {
-  position: fixed;
-  top: 50%;
-  right: 0;
+  position: fixed !important;
+  top: 50% !important;
+  right: 0 !important;
   transform: translateY(-50%);
   width: 36px;
   height: 36px;
