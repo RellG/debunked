@@ -1,4 +1,13 @@
 node_modules/
 .env
+.env.*
+!.env.example
 *.zip
+*.tar.gz
 dist/
+
+# Agent instruction files (kept locally, not published)
+CLAUDE.md
+CODEX.md
+.codex
+.claude/
